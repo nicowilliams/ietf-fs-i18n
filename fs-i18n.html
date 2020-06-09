@@ -1,0 +1,664 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>Internationalization Considerations for Filesystems and Filesystem Protocols</title>
+
+  <style type="text/css" title="Xml2Rfc (sans serif)">
+  /*<![CDATA[*/
+	  a {
+	  text-decoration: none;
+	  }
+      /* info code from SantaKlauss at http://www.madaboutstyle.com/tooltip2.html */
+      a.info {
+          /* This is the key. */
+          position: relative;
+          z-index: 24;
+          text-decoration: none;
+      }
+      a.info:hover {
+          z-index: 25;
+          color: #FFF; background-color: #900;
+      }
+      a.info span { display: none; }
+      a.info:hover span.info {
+          /* The span will display just on :hover state. */
+          display: block;
+          position: absolute;
+          font-size: smaller;
+          top: 2em; left: -5em; width: 15em;
+          padding: 2px; border: 1px solid #333;
+          color: #900; background-color: #EEE;
+          text-align: left;
+      }
+	  a.smpl {
+	  color: black;
+	  }
+	  a:hover {
+	  text-decoration: underline;
+	  }
+	  a:active {
+	  text-decoration: underline;
+	  }
+	  address {
+	  margin-top: 1em;
+	  margin-left: 2em;
+	  font-style: normal;
+	  }
+	  body {
+	  color: black;
+	  font-family: verdana, helvetica, arial, sans-serif;
+	  font-size: 10pt;
+	  max-width: 55em;
+	  
+	  }
+	  cite {
+	  font-style: normal;
+	  }
+	  dd {
+	  margin-right: 2em;
+	  }
+	  dl {
+	  margin-left: 2em;
+	  }
+	
+	  ul.empty {
+	  list-style-type: none;
+	  }
+	  ul.empty li {
+	  margin-top: .5em;
+	  }
+	  dl p {
+	  margin-left: 0em;
+	  }
+	  dt {
+	  margin-top: .5em;
+	  }
+	  h1 {
+	  font-size: 14pt;
+	  line-height: 21pt;
+	  page-break-after: avoid;
+	  }
+	  h1.np {
+	  page-break-before: always;
+	  }
+	  h1 a {
+	  color: #333333;
+	  }
+	  h2 {
+	  font-size: 12pt;
+	  line-height: 15pt;
+	  page-break-after: avoid;
+	  }
+	  h3, h4, h5, h6 {
+	  font-size: 10pt;
+	  page-break-after: avoid;
+	  }
+	  h2 a, h3 a, h4 a, h5 a, h6 a {
+	  color: black;
+	  }
+	  img {
+	  margin-left: 3em;
+	  }
+	  li {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  ol {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  ol p {
+	  margin-left: 0em;
+	  }
+	  p {
+	  margin-left: 2em;
+	  margin-right: 2em;
+	  }
+	  pre {
+	  margin-left: 3em;
+	  background-color: lightyellow;
+	  padding: .25em;
+	  }
+	  pre.text2 {
+	  border-style: dotted;
+	  border-width: 1px;
+	  background-color: #f0f0f0;
+	  width: 69em;
+	  }
+	  pre.inline {
+	  background-color: white;
+	  padding: 0em;
+	  }
+	  pre.text {
+	  border-style: dotted;
+	  border-width: 1px;
+	  background-color: #f8f8f8;
+	  width: 69em;
+	  }
+	  pre.drawing {
+	  border-style: solid;
+	  border-width: 1px;
+	  background-color: #f8f8f8;
+	  padding: 2em;
+	  }
+	  table {
+	  margin-left: 2em;
+	  }
+	  table.tt {
+	  vertical-align: top;
+	  }
+	  table.full {
+	  border-style: outset;
+	  border-width: 1px;
+	  }
+	  table.headers {
+	  border-style: outset;
+	  border-width: 1px;
+	  }
+	  table.tt td {
+	  vertical-align: top;
+	  }
+	  table.full td {
+	  border-style: inset;
+	  border-width: 1px;
+	  }
+	  table.tt th {
+	  vertical-align: top;
+	  }
+	  table.full th {
+	  border-style: inset;
+	  border-width: 1px;
+	  }
+	  table.headers th {
+	  border-style: none none inset none;
+	  border-width: 1px;
+	  }
+	  table.left {
+	  margin-right: auto;
+	  }
+	  table.right {
+	  margin-left: auto;
+	  }
+	  table.center {
+	  margin-left: auto;
+	  margin-right: auto;
+	  }
+	  caption {
+	  caption-side: bottom;
+	  font-weight: bold;
+	  font-size: 9pt;
+	  margin-top: .5em;
+	  }
+	
+	  table.header {
+	  border-spacing: 1px;
+	  width: 95%;
+	  font-size: 10pt;
+	  color: white;
+	  }
+	  td.top {
+	  vertical-align: top;
+	  }
+	  td.topnowrap {
+	  vertical-align: top;
+	  white-space: nowrap; 
+	  }
+	  table.header td {
+	  background-color: gray;
+	  width: 50%;
+	  }
+	  table.header a {
+	  color: white;
+	  }
+	  td.reference {
+	  vertical-align: top;
+	  white-space: nowrap;
+	  padding-right: 1em;
+	  }
+	  thead {
+	  display:table-header-group;
+	  }
+	  ul.toc, ul.toc ul {
+	  list-style: none;
+	  margin-left: 1.5em;
+	  margin-right: 0em;
+	  padding-left: 0em;
+	  }
+	  ul.toc li {
+	  line-height: 150%;
+	  font-weight: bold;
+	  font-size: 10pt;
+	  margin-left: 0em;
+	  margin-right: 0em;
+	  }
+	  ul.toc li li {
+	  line-height: normal;
+	  font-weight: normal;
+	  font-size: 9pt;
+	  margin-left: 0em;
+	  margin-right: 0em;
+	  }
+	  li.excluded {
+	  font-size: 0pt;
+	  }
+	  ul p {
+	  margin-left: 0em;
+	  }
+	
+	  .comment {
+	  background-color: yellow;
+	  }
+	  .center {
+	  text-align: center;
+	  }
+	  .error {
+	  color: red;
+	  font-style: italic;
+	  font-weight: bold;
+	  }
+	  .figure {
+	  font-weight: bold;
+	  text-align: center;
+	  font-size: 9pt;
+	  }
+	  .filename {
+	  color: #333333;
+	  font-weight: bold;
+	  font-size: 12pt;
+	  line-height: 21pt;
+	  text-align: center;
+	  }
+	  .fn {
+	  font-weight: bold;
+	  }
+	  .hidden {
+	  display: none;
+	  }
+	  .left {
+	  text-align: left;
+	  }
+	  .right {
+	  text-align: right;
+	  }
+	  .title {
+	  color: #990000;
+	  font-size: 18pt;
+	  line-height: 18pt;
+	  font-weight: bold;
+	  text-align: center;
+	  margin-top: 36pt;
+	  }
+	  .vcardline {
+	  display: block;
+	  }
+	  .warning {
+	  font-size: 14pt;
+	  background-color: yellow;
+	  }
+	
+	
+	  @media print {
+	  .noprint {
+		display: none;
+	  }
+	
+	  a {
+		color: black;
+		text-decoration: none;
+	  }
+	
+	  table.header {
+		width: 90%;
+	  }
+	
+	  td.header {
+		width: 50%;
+		color: black;
+		background-color: white;
+		vertical-align: top;
+		font-size: 12pt;
+	  }
+	
+	  ul.toc a::after {
+		content: leader('.') target-counter(attr(href), page);
+	  }
+	
+	  ul.ind li li a {
+		content: target-counter(attr(href), page);
+	  }
+	
+	  .print2col {
+		column-count: 2;
+		-moz-column-count: 2;
+		column-fill: auto;
+	  }
+	  }
+	
+	  @page {
+	  @top-left {
+		   content: "Internet-Draft"; 
+	  } 
+	  @top-right {
+		   content: "December 2010"; 
+	  } 
+	  @top-center {
+		   content: "Abbreviated Title";
+	  } 
+	  @bottom-left {
+		   content: "Doe"; 
+	  } 
+	  @bottom-center {
+		   content: "Expires June 2011"; 
+	  } 
+	  @bottom-right {
+		   content: "[Page " counter(page) "]"; 
+	  } 
+	  }
+	
+	  @page:first { 
+		@top-left {
+		  content: normal;
+		}
+		@top-right {
+		  content: normal;
+		}
+		@top-center {
+		  content: normal;
+		}
+	  }
+  /*]]>*/
+  </style>
+
+  <link href="#rfc.toc" rel="Contents">
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Requirements Language">
+<link href="#rfc.section.2" rel="Chapter" title="2 Requirements for Filesystem Internationalization">
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 Equivalence">
+<link href="#rfc.section.2.2" rel="Chapter" title="2.2 Case Mappings for Case-Insensitivity">
+<link href="#rfc.section.3" rel="Chapter" title="3 Running Code Architecture Notes">
+<link href="#rfc.section.4" rel="Chapter" title="4 Filesystem I18N Guidelines">
+<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Filesystem I18N Guidelines: Equivalence">
+<link href="#rfc.section.4.2" rel="Chapter" title="4.2 Filesystem I18N Guidelines: Case-Insensitivity">
+<link href="#rfc.section.4.3" rel="Chapter" title="4.3 I18N Versioning">
+<link href="#rfc.section.5" rel="Chapter" title="5 Filesystem Protocol I18N Guidelines">
+<link href="#rfc.section.5.1" rel="Chapter" title="5.1 I18N and Caching in Filesystem Protocol Clients">
+<link href="#rfc.section.6" rel="Chapter" title="6 Internationalization Considerations">
+<link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations">
+<link href="#rfc.section.8" rel="Chapter" title="8 Security Considerations">
+<link href="#rfc.references" rel="Chapter" title="9 Normative References">
+<link href="#rfc.authors" rel="Chapter">
+
+
+  <meta name="generator" content="xml2rfc version 2.9.6 - https://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Williams, N., Ed." />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-williams-filesystem-18n-00" />
+  <meta name="dct.issued" scheme="ISO8601" content="2020-09" />
+  <meta name="dct.abstract" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
+  <meta name="description" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+<td class="left">Internet Engineering Task Force</td>
+<td class="right">N. Williams, Ed.</td>
+</tr>
+<tr>
+<td class="left">Internet-Draft</td>
+<td class="right">Cryptonector, LLC</td>
+</tr>
+<tr>
+<td class="left">Intended status: Best Current Practice</td>
+<td class="right">June 9, 2020</td>
+</tr>
+<tr>
+<td class="left">Expires: December 11, 2020</td>
+<td class="right"></td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">Internationalization Considerations for Filesystems and Filesystem Protocols<br />
+  <span class="filename">draft-williams-filesystem-18n-00</span></p>
+  
+  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
+<p>This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  </p>
+<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on December 11, 2020.</p>
+<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
+<p>Copyright (c) 2020 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a>
+</li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Requirements Language</a>
+</li>
+</ul><li>2.   <a href="#rfc.section.2">Requirements for Filesystem Internationalization</a>
+</li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">Equivalence</a>
+</li>
+<li>2.2.   <a href="#rfc.section.2.2">Case Mappings for Case-Insensitivity</a>
+</li>
+</ul><li>3.   <a href="#rfc.section.3">Running Code Architecture Notes</a>
+</li>
+<li>4.   <a href="#rfc.section.4">Filesystem I18N Guidelines</a>
+</li>
+<ul><li>4.1.   <a href="#rfc.section.4.1">Filesystem I18N Guidelines: Equivalence</a>
+</li>
+<li>4.2.   <a href="#rfc.section.4.2">Filesystem I18N Guidelines: Case-Insensitivity</a>
+</li>
+<li>4.3.   <a href="#rfc.section.4.3">I18N Versioning</a>
+</li>
+</ul><li>5.   <a href="#rfc.section.5">Filesystem Protocol I18N Guidelines</a>
+</li>
+<ul><li>5.1.   <a href="#rfc.section.5.1">I18N and Caching in Filesystem Protocol Clients</a>
+</li>
+</ul><li>6.   <a href="#rfc.section.6">Internationalization Considerations</a>
+</li>
+<li>7.   <a href="#rfc.section.7">IANA Considerations</a>
+</li>
+<li>8.   <a href="#rfc.section.8">Security Considerations</a>
+</li>
+<li>9.   <a href="#rfc.references">Normative References</a>
+</li>
+<li><a href="#rfc.authors">Author's Address</a>
+</li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1">
+<a href="#rfc.section.1">1.</a> <a href="#intro" id="intro">Introduction</a>
+</h1>
+<p id="rfc.section.1.p.1">[TBD: Add references galore.]</p>
+<p id="rfc.section.1.p.2">We, the Internet community, have long concluded that we must internationalize all our protocols.  This is generally not an easy task, as often we are constrained by the realities of what can be achieved while maintaining backwards compatibility.  </p>
+<p id="rfc.section.1.p.3">In this document we foxus on filesystem internationalization (I18N), specifically only for file names and file paths.  Here we address the two main issues that arise in filesystem I18N: </p>
+
+<ul>
+<li>Unicode equivalence</li>
+<li>Case mappings for case-insensitivity</li>
+</ul>
+
+<p> </p>
+<h1 id="rfc.section.1.1">
+<a href="#rfc.section.1.1">1.1.</a> Requirements Language</h1>
+<p id="rfc.section.1.1.p.1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in <a href="#RFC2119" class="xref">RFC 2119</a>.  </p>
+<h1 id="rfc.section.2">
+<a href="#rfc.section.2">2.</a> <a href="#reqs" id="reqs">Requirements for Filesystem Internationalization</a>
+</h1>
+<p id="rfc.section.2.p.1">We must address two issues: </p>
+
+<ul>
+<li>Unicode equivalence</li>
+<li>Case mappings for case-insensitivity</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.2.p.2">Unicode can represent certain character strings in multiple visually- and semantically-equivalent ways.  For example, there are two ways to express LATIN SMALL LETTER A WITH ACUTE: </p>
+
+<ul>
+<li>U+00E1</li>
+<li>U+0061 U+0301</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.2.p.3">For some glyphs there is a single way to write them.  For others there are two.  And for yet others there can be many more than two.  To deal with this, Unicode defines Normal Forms (NFs), of which there are two basic ones: Normal Form Composed (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use "compatibility" mappings, NFKC and NFKD.  Unicode-aware applications can normalize text to avoid ambiguities, or they can use form-insensitive string comparisons, or both.  </p>
+<p id="rfc.section.2.p.4">Some filesystems support case-insensitivity, which is trivial for US-ASCII, but non-trivial for Unicode, requiring not only larger case-mapping tables, but also localized case-mapping tables as case-mapping rules might differ from languages to language.  </p>
+<h1 id="rfc.section.2.1">
+<a href="#rfc.section.2.1">2.1.</a> Equivalence</h1>
+<p id="rfc.section.2.1.p.1">For case-sensitive filesystems, only equivalence issues arise as to file names and file paths.  These can be addressed in one of two ways: </p>
+
+<ul>
+<li>normalize file names when created and when looked up,</li>
+<li>perform form-insensitive string comparisons on lookup.</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.2.1.p.2">The first option yields normalized file names on-disk and on the wire (e.g., when listing directories).  We shall term this "normalize-on-CREATE", or sometimes "normalize-on-CREATE-and-LOOKUP", or just "n-c/l".  </p>
+<p id="rfc.section.2.1.p.3">The second option preserves form as originally intended (if intended) or produced by the user or on their behalf by their systems' text input modes, but is form-insensitive.  That is, this option permits either encoding of, e.g., LATIN SMALL LETTER A WITH ACUTE on-disk and on the wire, but permits only one form of any string, whether normal or not.  We shall term this option "form-insensitive", or sometimes "form-insensitive and form-preserving", or just "f-i/p".  </p>
+<h1 id="rfc.section.2.2">
+<a href="#rfc.section.2.2">2.2.</a> Case Mappings for Case-Insensitivity</h1>
+<p id="rfc.section.2.2.p.1">Case-insensitivity implies mapping characters of one case to another for comparison purposes.  The case mappings for this are defined by Unicode.  Generally, case-insensitive filesystems preserve original case just form-insensitive filesystems preserve original form.  </p>
+<p id="rfc.section.2.2.p.2">It is possible that some case mappings may have to vary by locale.  A commonly used example of character where case mapping that varies by locale is LATIN SMALL LETTER DOTLESS I (U+0131).  </p>
+<p id="rfc.section.2.2.p.3">Because case-insensitive filesystems preserve case as in the original (at create time), one option (which we do not endorse here) is for case-insensitive filesystems to consider all of the following equivalent: </p>
+
+<ul>
+<li>LATIN CAPITAL LETTER I (U+0049)</li>
+<li>LATIN SMALL LETTER I (U+0069)</li>
+<li>LATIN CAPITAL LETTER I WITH DOT ABOVE (U+0130)</li>
+<li>LATIN SMALL LETTER DOTLESS I (U+0131)</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.2.2.p.4">We shouldn't have to specify any case mappings.  Ideally we could leave those and localization considerations entirely up to the Unicode standards and users.  However, remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit lookups to be performed using cached directory listings.  </p>
+<h1 id="rfc.section.3">
+<a href="#rfc.section.3">3.</a> <a href="#arch_notes" id="arch_notes">Running Code Architecture Notes</a>
+</h1>
+<p id="rfc.section.3.p.1">Surprisingly, almost all if not all general purpose operating systems in use today have a "virtual filesystem switch" (VFS) interface that permits the use of multiple different filesystem types on one system.  The VFS is essentially a pluggable programming interface that includes functionality for routing calls from user processes to the appropriate filesystems.  </p>
+<p id="rfc.section.3.p.2">The VFS architecture was developed in the 1980s, before Unicode adoption.  It is not surprising then that in general -if not simply always today- the code path from the interface between a user application and the operating system all the way to the filesystem implements no I18N functionality, and does the absolute minimum of character data interpretation: </p>
+
+<ul>
+<li>use of US-ASCII NUL (for "C string" termination),</li>
+<li>use of US-ASCII '/' and/or '\' (for file path component delimiting).</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.3.p.3">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" or "just-use-16" (as in UTF-16), with no attempt at normalization or case mapping done anywhere in between.  </p>
+<p id="rfc.section.3.p.4">In practice this has led to I18N functionality residing strictly in the filesystem.  Two filesystems have defined the best current practices in this regard: </p>
+
+<ul>
+<li>HFS+, which does normalize-on-CREATE (and LOOKUP), normalizing to a form that is very close to NFD and is case-sensitive;</li>
+<li>ZFS, which implements form-insensitive, form-preserving behavior and optionally implements case-insensitive, case-preserving behavior on a per-filesystem bases.  </li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.3.p.5">Filesystem protocol server implementations almost always, if not always, reside above the VFS layer in general purpose operating systems.  </p>
+<p id="rfc.section.3.p.6">Altogether, these circumstances make it very difficult to reliably locate I18N functionality above the VFS: there are too many places to alter, and all must agree exactly on I18N choices.  Moreover, implementing case-insensitive but case-preserving behavior above the VFS requires reading a directory, and so does implementing form-insensitive and form-preserving behavior.  The only behaviors that can be reliably implemented above the VFS are normalize- and case-fold- on-CREATE.  </p>
+<p id="rfc.section.3.p.7">Consider the set of already-running code that must all be modified in order to reliably implement I18N on general purpose operating systems: </p>
+
+<ul>
+<li>filesystem protocol servers</li>
+<li>POSIX system call layers or user process system call stub libraries</li>
+<li>WIN32 system call layers or user process system call stub libraries</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.3.p.8">It is simply not feasible to implement I18N at any laye above the VFS.  Even in the VFS, form- and case-preserving behaviors would be impossible to implement as performantly as in the filesystem.  Therefore, only the filesystem can reliably and interoperably implement I18N behaviors in general purpose operating systems, unless we dictate that form- and case-preserving behaviors must be abandoned, in which case the VFS may be made responsible for I18N instead of the filesystem.  </p>
+<p id="rfc.section.3.p.9">The fact that form- and case-preserving behaviors exist in filesystems today really means we cannot reasonably forbid those behaviours in Internet filesystem protocols.  </p>
+<p id="rfc.section.3.p.10">Since filesystems must ultimately be responsible for I18N, filesystems can also vary in the behaviors they implement.  This can happen because of </p>
+
+<ul class="empty">
+<li>Unicode versioning</li>
+<li>and because case-(in)sensitivity is often an option for the administrator, and often per-filesystem.</li>
+</ul>
+
+<p> </p>
+<p id="rfc.section.3.p.11">Lastly, note that form- and case-insensitive and -preserving behaviors complicate the use of cached directory listings for optimizing lookups on the client side of remote filesystem protocols.  It may not be possible or easy for a filesystem to adopt new Unicode versions, or adopt backwards-incompatible case mappings, after content has been created in it.  This implies that where a client for a remote filesystem must know what I18N functionality to implement for use with cached directory listings, the client must know specifically what profile of I18N functionality each cached filesystem implements.  Therefore we should specify a registry of such profiles.  </p>
+<h1 id="rfc.section.4">
+<a href="#rfc.section.4">4.</a> <a href="#guidelines_fs" id="guidelines_fs">Filesystem I18N Guidelines</a>
+</h1>
+<p id="rfc.section.4.p.1">We begin be recognizing and accepting that much running code implements I18N functionality at the filesystem.  Given this, we catalogue the range of acceptable behaviors.  Filesystems adhering to this specification MUST implement only acceptable I18N behaviors as specified here.  Acceptable variations may be registered in an IANA registry of filesystem I18N behaviors.  </p>
+<h1 id="rfc.section.4.1">
+<a href="#rfc.section.4.1">4.1.</a> <a href="#guidelines_fs_equiv" id="guidelines_fs_equiv">Filesystem I18N Guidelines: Equivalence</a>
+</h1>
+<p id="rfc.section.4.1.p.1">...</p>
+<h1 id="rfc.section.4.2">
+<a href="#rfc.section.4.2">4.2.</a> <a href="#guidelines_fs_case" id="guidelines_fs_case">Filesystem I18N Guidelines: Case-Insensitivity</a>
+</h1>
+<p id="rfc.section.4.2.p.1">...</p>
+<h1 id="rfc.section.4.3">
+<a href="#rfc.section.4.3">4.3.</a> <a href="#guidelines_fs_i18n_versioning" id="guidelines_fs_i18n_versioning">I18N Versioning</a>
+</h1>
+<p id="rfc.section.4.3.p.1">...</p>
+<h1 id="rfc.section.5">
+<a href="#rfc.section.5">5.</a> <a href="#guidelines_proto" id="guidelines_proto">Filesystem Protocol I18N Guidelines</a>
+</h1>
+<h1 id="rfc.section.5.1">
+<a href="#rfc.section.5.1">5.1.</a> <a href="#guidelines_caching" id="guidelines_caching">I18N and Caching in Filesystem Protocol Clients</a>
+</h1>
+<p id="rfc.section.5.1.p.1">...</p>
+<h1 id="rfc.section.6">
+<a href="#rfc.section.6">6.</a> <a href="#cons_i18n" id="cons_i18n">Internationalization Considerations</a>
+</h1>
+<p id="rfc.section.6.p.1">This document deals in internationalization throughout.  Limitations having to do with running code and versioning considerations are by and large accepted.  </p>
+<h1 id="rfc.section.7">
+<a href="#rfc.section.7">7.</a> <a href="#cons_iana" id="cons_iana">IANA Considerations</a>
+</h1>
+<p id="rfc.section.7.p.1">[TBD: Request the creation of a registry of filesystem I18N behaviors for equivalence and case-insensitivity.  These are needed so that caching clients can implement the same behaviors using cached directory listings.] </p>
+<h1 id="rfc.section.8">
+<a href="#rfc.section.8">8.</a> <a href="#cons_sec" id="cons_sec">Security Considerations</a>
+</h1>
+<p id="rfc.section.8.p.1">This document has no security considerations.  [Well, what about confusables?  mostly, confusables should be a non-issue in filesystems.] </p>
+<h1 id="rfc.references">
+<a href="#rfc.references">9.</a> Normative References</h1>
+<table><tbody><tr>
+<td class="reference"><b id="RFC2119">[RFC2119]</b></td>
+<td class="top">
+<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
+</tr></tbody></table>
+<h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Nico Williams</span> (editor)
+	  <span class="n hidden">
+		<span class="family-name">Williams</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Cryptonector, LLC</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality">Austin</span>,  
+		<span class="region">TX</span> 
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline">USA</span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:nico@cryptonector.com">nico@cryptonector.com</a></span>
+
+  </address>
+</div>
+
+</body>
+</html>

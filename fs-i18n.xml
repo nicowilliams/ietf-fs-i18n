@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+  <!ENTITY RFC2119 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocindent="no"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc comments="yes" ?>
+<?rfc inline="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="bcp" docName="draft-williams-filesystem-18n-00" ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <front>
+    <title abbrev="Accept-Auth &amp; Redirect">Internationalization Considerations for Filesystems and Filesystem Protocols</title>
+    <author fullname="Nico Williams" initials="N.W." surname="Williams" role="editor">
+      <organization>Cryptonector, LLC</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city>Austin</city>
+          <region>TX</region>
+          <code></code>
+          <country>USA</country>
+        </postal>
+        <phone></phone>
+        <email>nico@cryptonector.com</email>
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+    <date year="2020" />
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill 
+         in the current day for you. If only the current year is specified, xml2rfc will fill 
+	 in the current day and month for you. If the year is not the current one, it is 
+	 necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the 
+	 purpose of calculating the expiry date).  With drafts it is normally sufficient to 
+	 specify just the year. -->
+    <area>General</area>
+    <workgroup>Internet Engineering Task Force</workgroup>
+    <!-- WG name at the upperleft corner of the doc,
+         IETF is fine for individual submissions.  
+	 If this element is not present, the default is "Network Working Group",
+         which is used by the RFC Editor as a nod to the history of the IETF. -->
+
+    <keyword>Filesystem</keyword>
+    <keyword>FS</keyword>
+    <keyword>Internationalziation</keyword>
+    <keyword>I18N</keyword>
+
+    <abstract>
+      <t>
+        This document describes requirements for internationalization
+        (I18n) of filesystems specifically in the context of Internet
+        protocols, the architecture for filesystems in most existing
+        general purpose operating systems, and their implications for
+        filesystem internationalization.  From the I18N requirements for
+        filesystems and the architecture of running code we derive
+        requirements and recommendations for implementors of operating
+        systems and/or filesystems, as well as for Internet remote
+        filesystem protocols.
+      </t>
+    </abstract>
+
+  </front>
+
+  <middle>
+    <section anchor="intro" title="Introduction">
+      <t>[TBD: Add references galore.]</t>
+
+      <t>
+        We, the Internet community, have long concluded that we must
+        internationalize all our protocols.  This is generally not an
+        easy task, as often we are constrained by the realities of what
+        can be achieved while maintaining backwards compatibility.
+      </t>
+
+      <t>
+        In this document we foxus on filesystem internationalization
+        (I18N), specifically only for file names and file paths.  Here
+        we address the two main issues that arise in filesystem I18N:
+        <list style="symbols">
+          <t>Unicode equivalence</t>
+          <t>Case mappings for case-insensitivity</t>
+        </list>
+      </t>
+
+      <section title="Requirements Language">
+        <t>
+          The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+          "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+          document are to be interpreted as described in <xref
+            target="RFC2119">RFC 2119</xref>.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="reqs" title="Requirements for Filesystem Internationalization">
+      <t>
+        We must address two issues:
+        <list style="symbols">
+          <t>Unicode equivalence</t>
+          <t>Case mappings for case-insensitivity</t>
+        </list>
+      </t>
+
+      <t>
+        Unicode can represent certain character strings in multiple
+        visually- and semantically-equivalent ways.  For example, there
+        are two ways to express LATIN SMALL LETTER A WITH ACUTE:
+        <list style="symbols">
+          <t>U+00E1</t>
+          <t>U+0061 U+0301</t>
+        </list>
+      </t>
+
+      <t>
+        For some glyphs there is a single way to write them.  For
+        others there are two.  And for yet others there can be many more
+        than two.  To deal with this, Unicode defines Normal Forms
+        (NFs), of which there are two basic ones: Normal Form Composed
+        (NFC), and Normal Form Decomposed (NFD).  There are also NFs
+        that use "compatibility" mappings, NFKC and NFKD.  Unicode-aware
+        applications can normalize text to avoid ambiguities, or they
+        can use form-insensitive string comparisons, or both.
+      </t>
+
+      <t>
+        Some filesystems support case-insensitivity, which is trivial
+        for US-ASCII, but non-trivial for Unicode, requiring not only
+        larger case-mapping tables, but also localized case-mapping
+        tables as case-mapping rules might differ from languages to
+        language.
+      </t>
+
+      <section title="Equivalence">
+        <t>
+          For case-sensitive filesystems, only equivalence issues arise as
+          to file names and file paths.  These can be addressed in one of
+          two ways:
+          <list style="symbols">
+            <t>normalize file names when created and when looked up,</t>
+            <t>perform form-insensitive string comparisons on lookup.</t>
+          </list>
+        </t>
+
+        <t>
+          The first option yields normalized file names on-disk and on
+          the wire (e.g., when listing directories).  We shall term this
+          "normalize-on-CREATE", or sometimes
+          "normalize-on-CREATE-and-LOOKUP", or just "n-c/l".
+        </t>
+
+        <t>
+          The second option preserves form as originally intended (if
+          intended) or produced by the user or on their behalf by their
+          systems' text input modes, but is form-insensitive.  That is,
+          this option permits either encoding of, e.g., LATIN SMALL
+          LETTER A WITH ACUTE on-disk and on the wire, but permits only
+          one form of any string, whether normal or not.  We shall term
+          this option "form-insensitive", or sometimes "form-insensitive
+          and form-preserving", or just "f-i/p".
+        </t>
+      </section>
+
+      <section title="Case Mappings for Case-Insensitivity">
+        <t>
+          Case-insensitivity implies mapping characters of one case to
+          another for comparison purposes.  The case mappings for this
+          are defined by Unicode.  Generally, case-insensitive
+          filesystems preserve original case just form-insensitive
+          filesystems preserve original form.
+        </t>
+
+        <t>
+          It is possible that some case mappings may have to vary by
+          locale.  A commonly used example of character where case
+          mapping that varies by locale is LATIN SMALL LETTER DOTLESS I
+          (U+0131).
+        </t>
+        
+        <t>
+          Because case-insensitive filesystems preserve case
+          as in the original (at create time), one option (which we do
+          not endorse here) is for case-insensitive filesystems to
+          consider all of the following equivalent:
+          <list style="symbols">
+            <t>LATIN CAPITAL LETTER I (U+0049)</t>
+            <t>LATIN SMALL LETTER I (U+0069)</t>
+            <t>LATIN CAPITAL LETTER I WITH DOT ABOVE (U+0130)</t>
+            <t>LATIN SMALL LETTER DOTLESS I (U+0131)</t>
+          </list>
+        </t>
+
+        <t>
+          We shouldn't have to specify any case mappings.  Ideally we
+          could leave those and localization considerations entirely up
+          to the Unicode standards and users.  However, remote
+          filesystem protocols often involve caching on clients, which
+          caching may require knowledge of filesystem I18N settings in
+          order to permit lookups to be performed using cached directory
+          listings.
+        </t>
+      </section>
+    </section>
+
+    <section anchor="arch_notes" title="Running Code Architecture Notes">
+      <t>
+        Surprisingly, almost all if not all general purpose operating
+        systems in use today have a "virtual filesystem switch" (VFS)
+        interface that permits the use of multiple different filesystem
+        types on one system.  The VFS is essentially a pluggable
+        programming interface that includes functionality for routing
+        calls from user processes to the appropriate filesystems.
+      </t>
+
+      <t>
+        The VFS architecture was developed in the 1980s, before Unicode
+        adoption.  It is not surprising then that in general -if not
+        simply always today- the code path from the interface between a
+        user application and the operating system all the way to the
+        filesystem implements no I18N functionality, and does the
+        absolute minimum of character data interpretation:
+        <list style="symbols">
+          <t>use of US-ASCII NUL (for "C string" termination),</t>
+          <t>use of US-ASCII '/' and/or <![CDATA['\']]> (for file path
+            component delimiting).</t>
+        </list>
+      </t>
+
+      <t>
+        Thus in most if not all general purpose operating systems today,
+        the code path from the boundary between the application and the
+        operating system, and the boundary between the VFS and the
+        filesystem, is "just-use-8" or "just-use-16" (as in UTF-16),
+        with no attempt at normalization or case mapping done anywhere
+        in between.
+      </t>
+
+      <t>
+        In practice this has led to I18N functionality residing strictly
+        in the filesystem.  Two filesystems have defined the best
+        current practices in this regard:
+        <list style="symbols">
+          <t>
+            HFS+, which does normalize-on-CREATE (and LOOKUP),
+            normalizing to a form that is very close to NFD and is
+            case-sensitive;</t>
+          <t>
+            ZFS, which implements form-insensitive, form-preserving
+            behavior and optionally implements case-insensitive,
+            case-preserving behavior on a per-filesystem bases.
+          </t>
+        </list>
+      </t>
+
+      <t>
+        Filesystem protocol server implementations almost always, if not
+        always, reside above the VFS layer in general purpose operating
+        systems.
+      </t>
+
+      <t>
+        Altogether, these circumstances make it very difficult to
+        reliably locate I18N functionality above the VFS: there are too
+        many places to alter, and all must agree exactly on I18N
+        choices.  Moreover, implementing case-insensitive but
+        case-preserving behavior above the VFS requires reading a
+        directory, and so does implementing form-insensitive and
+        form-preserving behavior.  The only behaviors that can be
+        reliably implemented above the VFS are normalize- and case-fold-
+        on-CREATE.
+      </t>
+
+      <t>
+        Consider the set of already-running code that must all be
+        modified in order to reliably implement I18N on general purpose
+        operating systems:
+        <list style="symbols">
+          <t>filesystem protocol servers</t>
+          <t>POSIX system call layers or user process system call stub libraries</t>
+          <t>WIN32 system call layers or user process system call stub libraries</t>
+        </list>
+      </t>
+
+      <t>
+        It is simply not feasible to implement I18N at any laye above
+        the VFS.  Even in the VFS, form- and case-preserving behaviors
+        would be impossible to implement as performantly as in the
+        filesystem.  Therefore, only the filesystem can reliably and
+        interoperably implement I18N behaviors in general purpose
+        operating systems, unless we dictate that form- and
+        case-preserving behaviors must be abandoned, in which case
+        the VFS may be made responsible for I18N instead of the
+        filesystem.
+      </t>
+
+      <t>
+        The fact that form- and case-preserving behaviors exist in
+        filesystems today really means we cannot reasonably forbid those
+        behaviours in Internet filesystem protocols.
+      </t>
+
+      <t>
+        Since filesystems must ultimately be responsible for I18N,
+        filesystems can also vary in the behaviors they implement.  This
+        can happen because of
+        <list>
+          <t>Unicode versioning</t>
+          <t>and because case-(in)sensitivity is often an option for the
+            administrator, and often per-filesystem.</t>
+        </list>
+      </t>
+
+      <t>
+        Lastly, note that form- and case-insensitive and -preserving
+        behaviors complicate the use of cached directory listings for
+        optimizing lookups on the client side of remote filesystem
+        protocols.  It may not be possible or easy for a filesystem to
+        adopt new Unicode versions, or adopt backwards-incompatible case
+        mappings, after content has been created in it.  This implies
+        that where a client for a remote filesystem must know what I18N
+        functionality to implement for use with cached directory
+        listings, the client must know specifically what profile of I18N
+        functionality each cached filesystem implements.  Therefore we
+        should specify a registry of such profiles.
+      </t>
+    </section>
+
+    <section anchor="guidelines_fs" title="Filesystem I18N Guidelines">
+      <t>
+        We begin be recognizing and accepting that much running code
+        implements I18N functionality at the filesystem.  Given this, we
+        catalogue the range of acceptable behaviors.  Filesystems
+        adhering to this specification MUST implement only acceptable
+        I18N behaviors as specified here.  Acceptable variations may be
+        registered in an IANA registry of filesystem I18N behaviors.
+      </t>
+
+      <section anchor="guidelines_fs_equiv" title="Filesystem I18N Guidelines: Equivalence">
+        <t>...</t>
+      </section>
+
+      <section anchor="guidelines_fs_case" title="Filesystem I18N Guidelines: Case-Insensitivity">
+        <t>...</t>
+      </section>
+
+      <section anchor="guidelines_fs_i18n_versioning" title="I18N Versioning">
+        <t>...</t>
+      </section>
+    </section>
+
+    <section anchor="guidelines_proto" title="Filesystem Protocol I18N Guidelines">
+      <section anchor="guidelines_caching" title="I18N and Caching in Filesystem Protocol Clients">
+        <t>...</t>
+      </section>
+    </section>
+
+    <section anchor="cons_i18n" title="Internationalization Considerations">
+      <t>
+        This document deals in internationalization throughout.
+        Limitations having to do with running code and versioning
+        considerations are by and large accepted.
+      </t>
+    </section>
+
+    <section anchor="cons_iana" title="IANA Considerations">
+      <t>
+        [TBD: Request the creation of a registry of filesystem I18N
+        behaviors for equivalence and case-insensitivity.  These are
+        needed so that caching clients can implement the same behaviors
+        using cached directory listings.]
+      </t>
+    </section>
+
+    <section anchor="cons_sec" title="Security Considerations">
+      <t>
+        This document has no security considerations.  [Well, what about
+        confusables?  mostly, confusables should be a non-issue in
+        filesystems.]
+      </t>
+    </section>
+  </middle>
+  <back>
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+
+     Both are cited textually in the same manner: by using xref elements.
+     If you use the PI option, xml2rfc will, by default, try to find included files in the same
+     directory as the including file. You can also define the XML_LIBRARY environment variable
+     with a value containing a set of directories to search.  These can be either in the local
+     filing system or remote ones accessed by http (http://domain/dir/... ).-->
+    <references title="Normative References">
+      <!--?rfc include="http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+      &RFC2119;
+    </references>
+
+    <!-- <references title="Informative References">
+    </references> -->
+  </back>
+</rfc>
