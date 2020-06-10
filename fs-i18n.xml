@@ -484,6 +484,11 @@
 
     <section anchor="cons_iana" title="IANA Considerations">
       <t>
+        [ALTERNATIVELY use locale names and CLDR?  Need to establish
+        stability...]
+      </t>
+
+      <t>
         We hereby request the creation of a new IANA registry with
         Expert Review registration rules with the following fields:
         <list style="symbols">

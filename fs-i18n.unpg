@@ -4,8 +4,8 @@
 
 Internet Engineering Task Force                         N. Williams, Ed.
 Internet-Draft                                         Cryptonector, LLC
-Intended status: Best Current Practice                      June 9, 2020
-Expires: December 11, 2020
+Intended status: Best Current Practice                     June 10, 2020
+Expires: December 12, 2020
 
 
    Internationalization Considerations for Filesystems and Filesystem
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 11, 2020.
+   This Internet-Draft will expire on December 12, 2020.
 
 Copyright Notice
 
@@ -393,6 +393,9 @@ Table of Contents
    and large accepted.
 
 5.  IANA Considerations
+
+   [ALTERNATIVELY use locale names and CLDR?  Need to establish
+   stability...]
 
    We hereby request the creation of a new IANA registry with Expert
    Review registration rules with the following fields:

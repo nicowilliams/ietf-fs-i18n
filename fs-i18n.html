@@ -400,7 +400,7 @@
 
   <meta name="dct.creator" content="Williams, N., Ed." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-williams-filesystem-18n-00" />
-  <meta name="dct.issued" scheme="ISO8601" content="2020-09" />
+  <meta name="dct.issued" scheme="ISO8601" content="2020-10" />
   <meta name="dct.abstract" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
   <meta name="description" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
 
@@ -421,10 +421,10 @@
 </tr>
 <tr>
 <td class="left">Intended status: Best Current Practice</td>
-<td class="right">June 9, 2020</td>
+<td class="right">June 10, 2020</td>
 </tr>
 <tr>
-<td class="left">Expires: December 11, 2020</td>
+<td class="left">Expires: December 12, 2020</td>
 <td class="right"></td>
 </tr>
 
@@ -441,7 +441,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on December 11, 2020.</p>
+<p>This Internet-Draft will expire on December 12, 2020.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2020 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -655,7 +655,8 @@
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#cons_iana" id="cons_iana">IANA Considerations</a>
 </h1>
-<p id="rfc.section.5.p.1">We hereby request the creation of a new IANA registry with Expert Review registration rules with the following fields: </p>
+<p id="rfc.section.5.p.1">[ALTERNATIVELY use locale names and CLDR?  Need to establish stability...] </p>
+<p id="rfc.section.5.p.2">We hereby request the creation of a new IANA registry with Expert Review registration rules with the following fields: </p>
 
 <ul>
 <li>name, an identifier-like name</li>
@@ -664,7 +665,7 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.5.p.2">The case mappings registered here will be used by case-insensitive filesystems and filesystem protocols to identify tailored case mappings so that caching clients can implement the same case-insensitive behavior using cached directory listings.  </p>
+<p id="rfc.section.5.p.3">The case mappings registered here will be used by case-insensitive filesystems and filesystem protocols to identify tailored case mappings so that caching clients can implement the same case-insensitive behavior using cached directory listings.  </p>
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#cons_sec" id="cons_sec">Security Considerations</a>
 </h1>
