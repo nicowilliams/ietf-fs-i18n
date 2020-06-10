@@ -59,32 +59,35 @@ Table of Contents
 
    1.  Introduction
    1.1.  Requirements Language
-   2.  Requirements for Filesystem Internationalization
-   2.1.  Equivalence
-   2.2.  Case Mappings for Case-Insensitivity
-   3.  Running Code Architecture Notes
-   4.  Filesystem I18N Guidelines
-   4.1.  Filesystem I18N Guidelines: Equivalence
-   4.2.  Filesystem I18N Guidelines: Case-Insensitivity
-   4.3.  I18N Versioning
-   5.  Filesystem Protocol I18N Guidelines
-   5.1.  I18N and Caching in Filesystem Protocol Clients
-   6.  Internationalization Considerations
-   7.  IANA Considerations
-   8.  Security Considerations
-   9.  Normative References
+   1.2.  Filesystem Internationalization
+   1.2.1.  Equivalence
+   1.2.2.  Case Mappings for Case-Insensitivity
+   1.3.  Running Code Architecture Notes
+   2.  Filesystem I18N Guidelines
+   2.1.  Filesystem I18N Guidelines: Non-Unicode File names
+   2.2.  Filesystem I18N Guidelines: Case-Insensitivity
+   2.3.  I18N Versioning
+   3.  Filesystem Protocol I18N Guidelines
+   3.1.  I18N and Caching in Filesystem Protocol Clients
+   4.  Internationalization Considerations
+   5.  IANA Considerations
+   6.  Security Considerations
+   7.  References
+   7.1.  Normative References
+   7.2.  Informative References
    Author's Address
 
 1.  Introduction
 
-   [TBD: Add references galore.]
+   [TBD: Add references galore.  How to reference Unicode?  How to
+   reference US-ASCII?]
 
    We, the Internet community, have long concluded that we must
    internationalize all our protocols.  This is generally not an easy
    task, as often we are constrained by the realities of what can be
    achieved while maintaining backwards compatibility.
 
-   In this document we foxus on filesystem internationalization (I18N),
+   In this document we focus on filesystem internationalization (I18N),
    specifically only for file names and file paths.  Here we address the
    two main issues that arise in filesystem I18N:
 
@@ -98,7 +101,7 @@ Table of Contents
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
-2.  Requirements for Filesystem Internationalization
+1.2.  Filesystem Internationalization
 
    We must address two issues:
 
@@ -128,7 +131,7 @@ Table of Contents
    mapping tables, but also localized case-mapping tables as case-
    mapping rules might differ from languages to language.
 
-2.1.  Equivalence
+1.2.1.  Equivalence
 
    For case-sensitive filesystems, only equivalence issues arise as to
    file names and file paths.  These can be addressed in one of two
@@ -151,7 +154,7 @@ Table of Contents
    or not.  We shall term this option "form-insensitive", or sometimes
    "form-insensitive and form-preserving", or just "f-i/p".
 
-2.2.  Case Mappings for Case-Insensitivity
+1.2.2.  Case Mappings for Case-Insensitivity
 
    Case-insensitivity implies mapping characters of one case to another
    for comparison purposes.  The case mappings for this are defined by
@@ -163,8 +166,8 @@ Table of Contents
    locale is LATIN SMALL LETTER DOTLESS I (U+0131).
 
    Because case-insensitive filesystems preserve case as in the original
-   (at create time), one option (which we do not endorse here) is for
-   case-insensitive filesystems to consider all of the following
+   (at create time), one option (which we do not endorse here) might be
+   for case-insensitive filesystems to consider all of the following
    equivalent:
 
    o  LATIN CAPITAL LETTER I (U+0049)
@@ -182,7 +185,7 @@ Table of Contents
    of filesystem I18N settings in order to permit lookups to be
    performed using cached directory listings.
 
-3.  Running Code Architecture Notes
+1.3.  Running Code Architecture Notes
 
    Surprisingly, almost all if not all general purpose operating systems
    in use today have a "virtual filesystem switch" (VFS) interface that
@@ -237,13 +240,38 @@ Table of Contents
    order to reliably implement I18N on general purpose operating
    systems:
 
-   o  filesystem protocol servers
+   o  filesystem protocol servers, including but not limited to:
+
+      *  NFSv4 [RFC7530]
+
+      *  HTTP servers serving resources hosted on filesystems[RFC7230]
+
+      *  SFTP [I-D.ietf-secsh-filexfer]
 
    o  POSIX system call layers or user process system call stub
       libraries
 
    o  WIN32 system call layers or user process system call stub
       libraries
+
+   Regarding system calls and system call stubs in user process system
+   libraries, the continued use of statically-linked executables means
+   that these cannot reliably be modified.  The system call handlers
+   cannot reliably inspect the calling process to determine any
+   attributes of its locale.  Adding new system calls is possible, but
+   existing statically-linked executables wouldn't use them.  For
+   similar reasons, the VFS layer is generally (always) completely
+   unaware of any attributes of the locale of applications calling it,
+   whether via system calls or any other path.
+
+   Unix-like operating systems are generally (always) "just-use-8",
+   assuming only that file names and paths are C strings (i.e.,
+   terminated by zero-valued bytes) and sufficiently compatible with US-
+   ASCII that the file path component separator character, US-ASCII '/',
+   is meaningful.  As a result, it is possible to find I18N-unaware
+   filesystems with one or more non-Unicode, non-ASCII codesets in use
+   for file names!  We shall not concern ourselves further with non-
+   Unicode file names here, however.
 
    It is simply not feasible to implement I18N at any laye above the
    VFS.  Even in the VFS, form- and case-preserving behaviors would be
@@ -279,7 +307,7 @@ Table of Contents
    filesystem implements.  Therefore we should specify a registry of
    such profiles.
 
-4.  Filesystem I18N Guidelines
+2.  Filesystem I18N Guidelines
 
    We begin be recognizing and accepting that much running code
    implements I18N functionality at the filesystem.  Given this, we
@@ -288,49 +316,130 @@ Table of Contents
    specified here.  Acceptable variations may be registered in an IANA
    registry of filesystem I18N behaviors.
 
-4.1.  Filesystem I18N Guidelines: Equivalence
+2.1.  Filesystem I18N Guidelines: Non-Unicode File names
 
-   ...
+   Filesystems SHOULD reject attempts to create new non-Unicode file
+   names.
 
-4.2.  Filesystem I18N Guidelines: Case-Insensitivity
+   Filesystems either MUST normalize on CREATE (and LOOKUP), or MUST be
+   form-insensitive and form-preserving.
 
-   ...
+   Filesystems MUST specify a Unicode version for their normalization or
+   form-insensitive behavior.
 
-4.3.  I18N Versioning
+2.2.  Filesystem I18N Guidelines: Case-Insensitivity
 
-   ...
+   Filesystems MAY support case-insensitivity, in which case they SHOULD
+   be case-preserving.  Filesystems that are case-insensitive but not
+   case-preserving either MUST upcase or downcase all characters of file
+   names, or MUST upcase the first character of file names and downcase
+   the rest (a.k.a., "sentence case").
 
-5.  Filesystem Protocol I18N Guidelines
+   Case mappings for case-insensitive filesystems MUST be identified.
+   The default case mappings MUST be the default case algorithms for the
+   identified Unicode version without additional tailoring.  Filesystems
+   that use case algorithms tailored to specific locales SHOULD use case
+   mappings registered in an IANA registry to be created along with this
+   document.
 
-5.1.  I18N and Caching in Filesystem Protocol Clients
+   Case-insensitive filesystems MUST specify a Unicode version for their
+   case-insensitive behavior.
 
-   ...
+2.3.  I18N Versioning
 
-6.  Internationalization Considerations
+   Fileystems MUST identify a Unicode version for their I18N behaviors.
+   Filesystems MAY adopt new Unicode versions, though it is understood
+   that this may be difficult for non-empty filesystems.
+
+3.  Filesystem Protocol I18N Guidelines
+
+   Remote filesystem protocols that allow clients to perform lookups
+   against cached directory listings MUST allow clients to discover all
+   relevant I18N behaviors of the filesystem whence any given directory
+   listing:
+
+   o  whether the filesystem normalizes on CREATE (and LOOKUP), and if
+      so, to what NF in what Unicode version;
+
+   o  whether the filesystem is form-insensitive and form-preserving,
+      and if so, in what Unicode version;
+
+   o  whether the filesystem is case-insensitive and case-preserving,
+      and if so, with what mappings (default or tailured, and if
+      tailored provide an identifier for the set of mappings), and a
+      Unicode version.
+
+   Mappings are identified via a mapping set name as registered in an
+   IANA registry created along with this document.
+
+   File servers MUST reject attempts to create new non-Unicode file
+   names.
+
+3.1.  I18N and Caching in Filesystem Protocol Clients
+
+   Caching clients of remote filesystems either MUST NOT perform lookups
+   against cached directory listings, or MUST query the directories'
+   filesystems' I18N profiles and apply the same I18N equivalent form
+   policis and case-insensitivity case mappings.
+
+4.  Internationalization Considerations
 
    This document deals in internationalization throughout.  Limitations
    having to do with running code and versioning considerations are by
    and large accepted.
 
-7.  IANA Considerations
+5.  IANA Considerations
 
-   [TBD: Request the creation of a registry of filesystem I18N behaviors
-   for equivalence and case-insensitivity.  These are needed so that
-   caching clients can implement the same behaviors using cached
-   directory listings.]
+   We hereby request the creation of a new IANA registry with Expert
+   Review registration rules with the following fields:
 
-8.  Security Considerations
+   o  name, an identifier-like name
 
-   This document has no security considerations.  [Well, what about
-   confusables?  mostly, confusables should be a non-issue in
-   filesystems.]
+   o  Unicode version number
 
-9.  Normative References
+   o  listing of case mapping tailorings and/or references to external
+      case mapping tailoring specifications
+
+   The case mappings registered here will be used by case-insensitive
+   filesystems and filesystem protocols to identify tailored case
+   mappings so that caching clients can implement the same case-
+   insensitive behavior using cached directory listings.
+
+6.  Security Considerations
+
+   The methods of handling equivalent Unicode strings cause aliasing.
+   This is not expected to be a security problem.
+
+   Case-insensitivity causes aliasing.  This is not expected to be a
+   security problem.
+
+   No effort is made here to handle confusables.  This is not expected
+   to be a serious security problem.
+
+7.  References
+
+7.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
+
+7.2.  Informative References
+
+   [I-D.ietf-secsh-filexfer]
+              Galbraith, J. and O. Saarenmaa, "SSH File Transfer
+              Protocol", draft-ietf-secsh-filexfer-13 (work in
+              progress), July 2006.
+
+   [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
+              Protocol (HTTP/1.1): Message Syntax and Routing",
+              RFC 7230, DOI 10.17487/RFC7230, June 2014,
+              <https://www.rfc-editor.org/info/rfc7230>.
+
+   [RFC7530]  Haynes, T., Ed. and D. Noveck, Ed., "Network File System
+              (NFS) Version 4 Protocol", RFC 7530, DOI 10.17487/RFC7530,
+              March 2015, <https://www.rfc-editor.org/info/rfc7530>.
 
 Author's Address
 
