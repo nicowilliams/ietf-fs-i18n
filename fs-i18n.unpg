@@ -80,7 +80,10 @@ Table of Contents
 1.  Introduction
 
    [TBD: Add references galore.  How to reference Unicode?  How to
-   reference US-ASCII?]
+   reference US-ASCII?  How best to reference HFS+?  How best to
+   reference ZFS?  May have to find useful references for POSIX and
+   WIN32.  Various blog entries may be of interest -- can they be
+   referenced?]
 
    We, the Internet community, have long concluded that we must
    internationalize all our protocols.  This is generally not an easy
@@ -178,12 +181,13 @@ Table of Contents
 
    o  LATIN SMALL LETTER DOTLESS I (U+0131)
 
-   We shouldn't have to specify any case mappings.  Ideally we could
-   leave those and localization considerations entirely up to the
-   Unicode standards and users.  However, remote filesystem protocols
-   often involve caching on clients, which caching may require knowledge
-   of filesystem I18N settings in order to permit lookups to be
-   performed using cached directory listings.
+   Remote filesystem protocols often involve caching on clients, which
+   caching may require knowledge of filesystem I18N settings in order to
+   permit lookups to be performed using cached directory listings.  We
+   do not specify any case mappings here.  Instead we create a registry
+   of case mapping tailorings, and require that filesystems and servers
+   be able to identify what case mappings are in effect for case-
+   insensitive filesystems.
 
 1.3.  Running Code Architecture Notes
 

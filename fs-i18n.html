@@ -496,7 +496,7 @@
   <h1 id="rfc.section.1">
 <a href="#rfc.section.1">1.</a> <a href="#intro" id="intro">Introduction</a>
 </h1>
-<p id="rfc.section.1.p.1">[TBD: Add references galore.  How to reference Unicode?  How to reference US-ASCII?]</p>
+<p id="rfc.section.1.p.1">[TBD: Add references galore.  How to reference Unicode?  How to reference US-ASCII?  How best to reference HFS+?  How best to reference ZFS?  May have to find useful references for POSIX and WIN32.  Various blog entries may be of interest -- can they be referenced?] </p>
 <p id="rfc.section.1.p.2">We, the Internet community, have long concluded that we must internationalize all our protocols.  This is generally not an easy task, as often we are constrained by the realities of what can be achieved while maintaining backwards compatibility.  </p>
 <p id="rfc.section.1.p.3">In this document we focus on filesystem internationalization (I18N), specifically only for file names and file paths.  Here we address the two main issues that arise in filesystem I18N: </p>
 
@@ -556,7 +556,7 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.2.2.p.4">We shouldn't have to specify any case mappings.  Ideally we could leave those and localization considerations entirely up to the Unicode standards and users.  However, remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit lookups to be performed using cached directory listings.  </p>
+<p id="rfc.section.1.2.2.p.4">Remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit lookups to be performed using cached directory listings.  We do not specify any case mappings here.  Instead we create a registry of case mapping tailorings, and require that filesystems and servers be able to identify what case mappings are in effect for case-insensitive filesystems.  </p>
 <h1 id="rfc.section.1.3">
 <a href="#rfc.section.1.3">1.3.</a> <a href="#arch_notes" id="arch_notes">Running Code Architecture Notes</a>
 </h1>
