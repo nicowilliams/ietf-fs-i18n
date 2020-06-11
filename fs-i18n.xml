@@ -98,11 +98,11 @@
         we address the two main issues that arise in filesystem I18N:
         <list style="symbols">
           <t>Unicode equivalence</t>
-          <t>Case mappings for case-insensitivity</t>
+          <t>Case foldings for case-insensitivity</t>
         </list>
       </t>
 
-      <section title="Requirements Language">
+      <section anchor="rfc2119_terms" title="Requirements Language">
         <t>
           The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
           "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -111,12 +111,12 @@
         </t>
       </section>
 
-      <section anchor="fs_i18n" title="Filesystem Internationalization">
+      <section anchor="intro_fs_i18n" title="Filesystem Internationalization">
         <t>
           We must address two issues:
           <list style="symbols">
             <t>Unicode equivalence</t>
-            <t>Case mappings for case-insensitivity</t>
+            <t>Case foldings for case-insensitivity</t>
           </list>
         </t>
 
@@ -136,7 +136,7 @@
           than two.  To deal with this, Unicode defines Normal Forms
           (NFs), of which there are two basic ones: Normal Form Composed
           (NFC), and Normal Form Decomposed (NFD).  There are also NFs
-          that use "compatibility" mappings, NFKC and NFKD.  Unicode-aware
+          that use "compatibility" Foldings, NFKC and NFKD.  Unicode-aware
           applications can normalize text to avoid ambiguities, or they
           can use form-insensitive string comparisons, or both.
         </t>
@@ -144,12 +144,12 @@
         <t>
           Some filesystems support case-insensitivity, which is trivial
           for US-ASCII, but non-trivial for Unicode, requiring not only
-          larger case-mapping tables, but also localized case-mapping
-          tables as case-mapping rules might differ from languages to
+          larger case-folding tables, but also localized case-folding
+          tables as case-folding rules might differ from languages to
           language.
         </t>
 
-        <section title="Equivalence">
+        <section anchor="intro_norm" title="Normalization">
           <t>
             For case-sensitive filesystems, only equivalence issues arise as
             to file names and file paths.  These can be addressed in one of
@@ -179,19 +179,19 @@
           </t>
         </section>
 
-        <section title="Case Mappings for Case-Insensitivity">
+        <section anchor="intro_case" title="Case Foldings for Case-Insensitivity">
           <t>
-            Case-insensitivity implies mapping characters of one case to
-            another for comparison purposes.  The case mappings for this
-            are defined by Unicode.  Generally, case-insensitive
-            filesystems preserve original case just form-insensitive
-            filesystems preserve original form.
+            Case-insensitivity implies folding characters of one case to
+            another for comparison purposes, typically to lower-case.
+            These case foldings are defined by Unicode.  Generally,
+            case-insensitive filesystems preserve original case just
+            form-insensitive filesystems preserve original form.
           </t>
 
           <t>
-            It is possible that some case mappings may have to vary by
+            It is possible that some case foldings may have to vary by
             locale.  A commonly used example of character where case
-            mapping that varies by locale is LATIN SMALL LETTER DOTLESS I
+            foldings that varies by locale is LATIN SMALL LETTER DOTLESS I
             (U+0131).
           </t>
           
@@ -213,10 +213,11 @@
             on clients, which caching may require knowledge of
             filesystem I18N settings in order to permit lookups to be
             performed using cached directory listings.  We do not
-            specify any case mappings here.  Instead we create a
-            registry of case mapping tailorings, and require that
+            specify any case foldings here.  Instead we will either
+            create a registry of case folding tailorings, or use the
+            Common Locale Data Repository (CLDR), then require that
             filesystems and servers be able to identify what case
-            mappings are in effect for case-insensitive filesystems.
+            foldings are in effect for case-insensitive filesystems.
           </t>
         </section>
       </section>
@@ -250,7 +251,7 @@
           the code path from the boundary between the application and the
           operating system, and the boundary between the VFS and the
           filesystem, is "just-use-8" or "just-use-16" (as in UTF-16),
-          with no attempt at normalization or case mapping done anywhere
+          with no attempt at normalization or case folding done anywhere
           in between.
         </t>
 
@@ -297,13 +298,24 @@
             <t>
               filesystem protocol servers, including but not limited to:
               <list style="symbols">
-                <t>NFSv4 <xref target="RFC7530"/></t>
-                <t>HTTP servers serving resources hosted on filesystems<xref target="RFC7230"/></t>
-                <t>SFTP <xref target="I-D.ietf-secsh-filexfer"/></t>
+                <t>Network File System (NFSv4) <xref target="RFC7530"/>;</t>
+                <t>
+                  Hypertext Transfer Protocol (HTTP) servers serving
+                  resources hosted on filesystems<xref target="RFC7230"/>;
+                </t>
+                <t>
+                  SSH File Transfer Protocol (SFTP)
+                  <xref target="I-D.ietf-secsh-filexfer"/>;
+                </t>
+                <t>
+                  various remote filesystem protocols that are not
+                  Internet Protocols (i.e., not standards-track Internet
+                  RFCs);
+                </t>
               </list>
             </t>
-            <t>POSIX system call layers or user process system call stub libraries</t>
-            <t>WIN32 system call layers or user process system call stub libraries</t>
+            <t>POSIX system call layers or user process system call stub libraries;</t>
+            <t>WIN32 system call layers or user process system call stub libraries.</t>
           </list>
         </t>
 
@@ -333,46 +345,68 @@
         </t>
 
         <t>
-          It is simply not feasible to implement I18N at any laye above
-          the VFS.  Even in the VFS, form- and case-preserving behaviors
-          would be impossible to implement as performantly as in the
-          filesystem.  Therefore, only the filesystem can reliably and
-          interoperably implement I18N behaviors in general purpose
-          operating systems, unless we dictate that form- and
-          case-preserving behaviors must be abandoned, in which case
-          the VFS may be made responsible for I18N instead of the
-          filesystem.
+          For these reasons it is simply not practical to implement I18N
+          at any layer above the VFS.
         </t>
 
         <t>
-          The fact that form- and case-preserving behaviors exist in
-          filesystems today really means we cannot reasonably forbid those
-          behaviours in Internet filesystem protocols.
+          Even in the VFS, form- and case-insensitive and -preserving
+          behaviors would be difficult to implement as performantly as
+          in the filesystem.  The VFS would have to list a directory
+          completely before being able to apply those behaviors.  It
+          is reasonable to expect caching clients of remote filesystems
+          to cache directory listings (especially for offline
+          operation), it isn't reasonable to expect the same of the VFS.
+          Compare to the filesystem itself, which can maintain a fast
+          index (e.g., hash table or b-tree) where the keys are
+          normalized and possibly case-folded file names and thus may
+          not need to read all of a very large directory in order to
+          perform fast lookups that are form- and even case-insensitive.
         </t>
 
         <t>
-          Since filesystems must ultimately be responsible for I18N,
-          filesystems can also vary in the behaviors they implement.  This
+          The only way to implement I18N behaviors in the VFS layer
+          rather than at the filesystem is to abandon form- and
+          case-preserving behaviors.  For case-insensitivity this would
+          require using sentence-case, or all lower-case, perhaps, and
+          would be surprising to users.  At any rate, that approach
+          would also render much running code "non-compliant" with this
+          specification.
+        </t>
+
+        <t>
+          Therefore, generally speaking, only the filesystem can
+          reliably, interoperably, and performantly implement I18N
+          behaviors in general purpose operating systems.
+        </t>
+
+        <t>
+          Note that variations in I18N behaviors can happen even on the
+          same server with multiple filesystems of the same type.  This
           can happen because of
           <list>
-            <t>Unicode versioning</t>
-            <t>and because case-(in)sensitivity is often an option for the
-              administrator, and often per-filesystem.</t>
+            <t>different Unicode versions being used at the times of
+              creation of various filesystems, and</t>
+            <t>locale settings on each filesystem.</t>
           </list>
         </t>
 
         <t>
-          Lastly, note that form- and case-insensitive and -preserving
-          behaviors complicate the use of cached directory listings for
-          optimizing lookups on the client side of remote filesystem
-          protocols.  It may not be possible or easy for a filesystem to
-          adopt new Unicode versions, or adopt backwards-incompatible case
-          mappings, after content has been created in it.  This implies
-          that where a client for a remote filesystem must know what I18N
-          functionality to implement for use with cached directory
-          listings, the client must know specifically what profile of I18N
-          functionality each cached filesystem implements.  Therefore we
-          should specify a registry of such profiles.
+          Locale variations are only relevant to case-folding for
+          case-insensitivity.  Running code mostly uses default
+          case-folding rules, but there is not reason to assume that
+          locale-specific case-folding rules won't be supported by
+          running code in the future.
+        </t>
+
+        <t>
+          It may not be possible or easy for a filesystem to adopt new
+          Unicode versions, or adopt backwards-incompatible case
+          foldings, after content has been created in it.  This implies
+          that where a client for a remote filesystem must know what
+          I18N functionality to implement for use with cached directory
+          listings, the client must know specifically what profile of
+          I18N functionality each cached filesystem implements.
         </t>
       </section>
     </section>
@@ -413,11 +447,11 @@
         </t>
 
         <t>
-          Case mappings for case-insensitive filesystems MUST be
-          identified.  The default case mappings MUST be the default
+          Case foldings for case-insensitive filesystems MUST be
+          identified.  The default case foldings MUST be the default
           case algorithms for the identified Unicode version without
           additional tailoring.  Filesystems that use case algorithms
-          tailored to specific locales SHOULD use case mappings
+          tailored to specific locales SHOULD use case foldings
           registered in an IANA registry to be created along with this
           document.
         </t>
@@ -450,11 +484,11 @@
           <t>whether the filesystem is form-insensitive and
             form-preserving, and if so, in what Unicode version;</t>
           <t>whether the filesystem is case-insensitive and
-            case-preserving, and if so, with what mappings (default or
+            case-preserving, and if so, with what foldings (default or
             tailured, and if tailored provide an identifier for the set
-            of mappings), and a Unicode version.</t>
+            of foldings), and a Unicode version.</t>
         </list>
-        Mappings are identified via a mapping set name as registered
+        Foldings are identified via a folding set name as registered
         in an IANA registry created along with this document.
       </t>
 
@@ -469,7 +503,7 @@
           lookups against cached directory listings, or MUST query the
           directories' filesystems' I18N profiles and apply the same
           I18N equivalent form policis and case-insensitivity case
-          mappings.
+          foldings.
         </t>
       </section>
     </section>
@@ -485,7 +519,7 @@
     <section anchor="cons_iana" title="IANA Considerations">
       <t>
         [ALTERNATIVELY use locale names and CLDR?  Need to establish
-        stability...]
+        stability...  But CLDR ]
       </t>
 
       <t>
@@ -494,15 +528,15 @@
         <list style="symbols">
           <t>name, an identifier-like name</t>
           <t>Unicode version number</t>
-          <t>listing of case mapping tailorings and/or references to
-            external case mapping tailoring specifications</t>
+          <t>listing of case folding tailorings and/or references to
+            external case folding tailoring specifications</t>
         </list>
       </t>
 
       <t>
-        The case mappings registered here will be used by
+        The case foldings registered here will be used by
         case-insensitive filesystems and filesystem protocols to
-        identify tailored case mappings so that caching clients can
+        identify tailored case foldings so that caching clients can
         implement the same case-insensitive behavior using cached
         directory listings.
       </t>

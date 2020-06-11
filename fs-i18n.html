@@ -377,8 +377,8 @@
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
 <link href="#rfc.section.1.1" rel="Chapter" title="1.1 Requirements Language">
 <link href="#rfc.section.1.2" rel="Chapter" title="1.2 Filesystem Internationalization">
-<link href="#rfc.section.1.2.1" rel="Chapter" title="1.2.1 Equivalence">
-<link href="#rfc.section.1.2.2" rel="Chapter" title="1.2.2 Case Mappings for Case-Insensitivity">
+<link href="#rfc.section.1.2.1" rel="Chapter" title="1.2.1 Normalization">
+<link href="#rfc.section.1.2.2" rel="Chapter" title="1.2.2 Case Foldings for Case-Insensitivity">
 <link href="#rfc.section.1.3" rel="Chapter" title="1.3 Running Code Architecture Notes">
 <link href="#rfc.section.2" rel="Chapter" title="2 Filesystem I18N Guidelines">
 <link href="#rfc.section.2.1" rel="Chapter" title="2.1 Filesystem I18N Guidelines: Non-Unicode File names">
@@ -457,9 +457,9 @@
 </li>
 <li>1.2.   <a href="#rfc.section.1.2">Filesystem Internationalization</a>
 </li>
-<ul><li>1.2.1.   <a href="#rfc.section.1.2.1">Equivalence</a>
+<ul><li>1.2.1.   <a href="#rfc.section.1.2.1">Normalization</a>
 </li>
-<li>1.2.2.   <a href="#rfc.section.1.2.2">Case Mappings for Case-Insensitivity</a>
+<li>1.2.2.   <a href="#rfc.section.1.2.2">Case Foldings for Case-Insensitivity</a>
 </li>
 </ul><li>1.3.   <a href="#rfc.section.1.3">Running Code Architecture Notes</a>
 </li>
@@ -502,21 +502,22 @@
 
 <ul>
 <li>Unicode equivalence</li>
-<li>Case mappings for case-insensitivity</li>
+<li>Case foldings for case-insensitivity</li>
 </ul>
 
 <p> </p>
 <h1 id="rfc.section.1.1">
-<a href="#rfc.section.1.1">1.1.</a> Requirements Language</h1>
+<a href="#rfc.section.1.1">1.1.</a> <a href="#rfc2119_terms" id="rfc2119_terms">Requirements Language</a>
+</h1>
 <p id="rfc.section.1.1.p.1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in <a href="#RFC2119" class="xref">RFC 2119</a>.  </p>
 <h1 id="rfc.section.1.2">
-<a href="#rfc.section.1.2">1.2.</a> <a href="#fs_i18n" id="fs_i18n">Filesystem Internationalization</a>
+<a href="#rfc.section.1.2">1.2.</a> <a href="#intro_fs_i18n" id="intro_fs_i18n">Filesystem Internationalization</a>
 </h1>
 <p id="rfc.section.1.2.p.1">We must address two issues: </p>
 
 <ul>
 <li>Unicode equivalence</li>
-<li>Case mappings for case-insensitivity</li>
+<li>Case foldings for case-insensitivity</li>
 </ul>
 
 <p> </p>
@@ -528,10 +529,11 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.2.p.3">For some glyphs there is a single way to write them.  For others there are two.  And for yet others there can be many more than two.  To deal with this, Unicode defines Normal Forms (NFs), of which there are two basic ones: Normal Form Composed (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use "compatibility" mappings, NFKC and NFKD.  Unicode-aware applications can normalize text to avoid ambiguities, or they can use form-insensitive string comparisons, or both.  </p>
-<p id="rfc.section.1.2.p.4">Some filesystems support case-insensitivity, which is trivial for US-ASCII, but non-trivial for Unicode, requiring not only larger case-mapping tables, but also localized case-mapping tables as case-mapping rules might differ from languages to language.  </p>
+<p id="rfc.section.1.2.p.3">For some glyphs there is a single way to write them.  For others there are two.  And for yet others there can be many more than two.  To deal with this, Unicode defines Normal Forms (NFs), of which there are two basic ones: Normal Form Composed (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use "compatibility" Foldings, NFKC and NFKD.  Unicode-aware applications can normalize text to avoid ambiguities, or they can use form-insensitive string comparisons, or both.  </p>
+<p id="rfc.section.1.2.p.4">Some filesystems support case-insensitivity, which is trivial for US-ASCII, but non-trivial for Unicode, requiring not only larger case-folding tables, but also localized case-folding tables as case-folding rules might differ from languages to language.  </p>
 <h1 id="rfc.section.1.2.1">
-<a href="#rfc.section.1.2.1">1.2.1.</a> Equivalence</h1>
+<a href="#rfc.section.1.2.1">1.2.1.</a> <a href="#intro_norm" id="intro_norm">Normalization</a>
+</h1>
 <p id="rfc.section.1.2.1.p.1">For case-sensitive filesystems, only equivalence issues arise as to file names and file paths.  These can be addressed in one of two ways: </p>
 
 <ul>
@@ -543,9 +545,10 @@
 <p id="rfc.section.1.2.1.p.2">The first option yields normalized file names on-disk and on the wire (e.g., when listing directories).  We shall term this "normalize-on-CREATE", or sometimes "normalize-on-CREATE-and-LOOKUP", or just "n-c/l".  </p>
 <p id="rfc.section.1.2.1.p.3">The second option preserves form as originally intended (if intended) or produced by the user or on their behalf by their systems' text input modes, but is form-insensitive.  That is, this option permits either encoding of, e.g., LATIN SMALL LETTER A WITH ACUTE on-disk and on the wire, but permits only one form of any string, whether normal or not.  We shall term this option "form-insensitive", or sometimes "form-insensitive and form-preserving", or just "f-i/p".  </p>
 <h1 id="rfc.section.1.2.2">
-<a href="#rfc.section.1.2.2">1.2.2.</a> Case Mappings for Case-Insensitivity</h1>
-<p id="rfc.section.1.2.2.p.1">Case-insensitivity implies mapping characters of one case to another for comparison purposes.  The case mappings for this are defined by Unicode.  Generally, case-insensitive filesystems preserve original case just form-insensitive filesystems preserve original form.  </p>
-<p id="rfc.section.1.2.2.p.2">It is possible that some case mappings may have to vary by locale.  A commonly used example of character where case mapping that varies by locale is LATIN SMALL LETTER DOTLESS I (U+0131).  </p>
+<a href="#rfc.section.1.2.2">1.2.2.</a> <a href="#intro_case" id="intro_case">Case Foldings for Case-Insensitivity</a>
+</h1>
+<p id="rfc.section.1.2.2.p.1">Case-insensitivity implies folding characters of one case to another for comparison purposes, typically to lower-case.  These case foldings are defined by Unicode.  Generally, case-insensitive filesystems preserve original case just form-insensitive filesystems preserve original form.  </p>
+<p id="rfc.section.1.2.2.p.2">It is possible that some case foldings may have to vary by locale.  A commonly used example of character where case foldings that varies by locale is LATIN SMALL LETTER DOTLESS I (U+0131).  </p>
 <p id="rfc.section.1.2.2.p.3">Because case-insensitive filesystems preserve case as in the original (at create time), one option (which we do not endorse here) might be for case-insensitive filesystems to consider all of the following equivalent: </p>
 
 <ul>
@@ -556,7 +559,7 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.2.2.p.4">Remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit lookups to be performed using cached directory listings.  We do not specify any case mappings here.  Instead we create a registry of case mapping tailorings, and require that filesystems and servers be able to identify what case mappings are in effect for case-insensitive filesystems.  </p>
+<p id="rfc.section.1.2.2.p.4">Remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit lookups to be performed using cached directory listings.  We do not specify any case foldings here.  Instead we will either create a registry of case folding tailorings, or use the Common Locale Data Repository (CLDR), then require that filesystems and servers be able to identify what case foldings are in effect for case-insensitive filesystems.  </p>
 <h1 id="rfc.section.1.3">
 <a href="#rfc.section.1.3">1.3.</a> <a href="#arch_notes" id="arch_notes">Running Code Architecture Notes</a>
 </h1>
@@ -569,7 +572,7 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.3">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" or "just-use-16" (as in UTF-16), with no attempt at normalization or case mapping done anywhere in between.  </p>
+<p id="rfc.section.1.3.p.3">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" or "just-use-16" (as in UTF-16), with no attempt at normalization or case folding done anywhere in between.  </p>
 <p id="rfc.section.1.3.p.4">In practice this has led to I18N functionality residing strictly in the filesystem.  Two filesystems have defined the best current practices in this regard: </p>
 
 <ul>
@@ -584,33 +587,34 @@
 
 <ul>
 <li>filesystem protocol servers, including but not limited to: <ul>
-<li>NFSv4 <a href="#RFC7530" class="xref">[RFC7530]</a>
-</li>
-<li>HTTP servers serving resources hosted on filesystems<a href="#RFC7230" class="xref">[RFC7230]</a>
-</li>
-<li>SFTP <a href="#I-D.ietf-secsh-filexfer" class="xref">[I-D.ietf-secsh-filexfer]</a>
-</li>
+<li>Network File System (NFSv4) <a href="#RFC7530" class="xref">[RFC7530]</a>;</li>
+<li>Hypertext Transfer Protocol (HTTP) servers serving resources hosted on filesystems<a href="#RFC7230" class="xref">[RFC7230]</a>; </li>
+<li>SSH File Transfer Protocol (SFTP) <a href="#I-D.ietf-secsh-filexfer" class="xref">[I-D.ietf-secsh-filexfer]</a>; </li>
+<li>various remote filesystem protocols that are not Internet Protocols (i.e., not standards-track Internet RFCs); </li>
 </ul>
 <p> </p>
 </li>
-<li>POSIX system call layers or user process system call stub libraries</li>
-<li>WIN32 system call layers or user process system call stub libraries</li>
+<li>POSIX system call layers or user process system call stub libraries;</li>
+<li>WIN32 system call layers or user process system call stub libraries.</li>
 </ul>
 
 <p> </p>
 <p id="rfc.section.1.3.p.8">Regarding system calls and system call stubs in user process system libraries, the continued use of statically-linked executables means that these cannot reliably be modified.  The system call handlers cannot reliably inspect the calling process to determine any attributes of its locale.  Adding new system calls is possible, but existing statically-linked executables wouldn't use them.  For similar reasons, the VFS layer is generally (always) completely unaware of any attributes of the locale of applications calling it, whether via system calls or any other path.  </p>
 <p id="rfc.section.1.3.p.9">Unix-like operating systems are generally (always) "just-use-8", assuming only that file names and paths are C strings (i.e., terminated by zero-valued bytes) and sufficiently compatible with US-ASCII that the file path component separator character, US-ASCII '/', is meaningful.  As a result, it is possible to find I18N-unaware filesystems with one or more non-Unicode, non-ASCII codesets in use for file names!  We shall not concern ourselves further with non-Unicode file names here, however.  </p>
-<p id="rfc.section.1.3.p.10">It is simply not feasible to implement I18N at any laye above the VFS.  Even in the VFS, form- and case-preserving behaviors would be impossible to implement as performantly as in the filesystem.  Therefore, only the filesystem can reliably and interoperably implement I18N behaviors in general purpose operating systems, unless we dictate that form- and case-preserving behaviors must be abandoned, in which case the VFS may be made responsible for I18N instead of the filesystem.  </p>
-<p id="rfc.section.1.3.p.11">The fact that form- and case-preserving behaviors exist in filesystems today really means we cannot reasonably forbid those behaviours in Internet filesystem protocols.  </p>
-<p id="rfc.section.1.3.p.12">Since filesystems must ultimately be responsible for I18N, filesystems can also vary in the behaviors they implement.  This can happen because of </p>
+<p id="rfc.section.1.3.p.10">For these reasons it is simply not practical to implement I18N at any layer above the VFS.  </p>
+<p id="rfc.section.1.3.p.11">Even in the VFS, form- and case-insensitive and -preserving behaviors would be difficult to implement as performantly as in the filesystem.  The VFS would have to list a directory completely before being able to apply those behaviors.  It is reasonable to expect caching clients of remote filesystems to cache directory listings (especially for offline operation), it isn't reasonable to expect the same of the VFS.  Compare to the filesystem itself, which can maintain a fast index (e.g., hash table or b-tree) where the keys are normalized and possibly case-folded file names and thus may not need to read all of a very large directory in order to perform fast lookups that are form- and even case-insensitive.  </p>
+<p id="rfc.section.1.3.p.12">The only way to implement I18N behaviors in the VFS layer rather than at the filesystem is to abandon form- and case-preserving behaviors.  For case-insensitivity this would require using sentence-case, or all lower-case, perhaps, and would be surprising to users.  At any rate, that approach would also render much running code "non-compliant" with this specification.  </p>
+<p id="rfc.section.1.3.p.13">Therefore, generally speaking, only the filesystem can reliably, interoperably, and performantly implement I18N behaviors in general purpose operating systems.  </p>
+<p id="rfc.section.1.3.p.14">Note that variations in I18N behaviors can happen even on the same server with multiple filesystems of the same type.  This can happen because of </p>
 
 <ul class="empty">
-<li>Unicode versioning</li>
-<li>and because case-(in)sensitivity is often an option for the administrator, and often per-filesystem.</li>
+<li>different Unicode versions being used at the times of creation of various filesystems, and</li>
+<li>locale settings on each filesystem.</li>
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.13">Lastly, note that form- and case-insensitive and -preserving behaviors complicate the use of cached directory listings for optimizing lookups on the client side of remote filesystem protocols.  It may not be possible or easy for a filesystem to adopt new Unicode versions, or adopt backwards-incompatible case mappings, after content has been created in it.  This implies that where a client for a remote filesystem must know what I18N functionality to implement for use with cached directory listings, the client must know specifically what profile of I18N functionality each cached filesystem implements.  Therefore we should specify a registry of such profiles.  </p>
+<p id="rfc.section.1.3.p.15">Locale variations are only relevant to case-folding for case-insensitivity.  Running code mostly uses default case-folding rules, but there is not reason to assume that locale-specific case-folding rules won't be supported by running code in the future.  </p>
+<p id="rfc.section.1.3.p.16">It may not be possible or easy for a filesystem to adopt new Unicode versions, or adopt backwards-incompatible case foldings, after content has been created in it.  This implies that where a client for a remote filesystem must know what I18N functionality to implement for use with cached directory listings, the client must know specifically what profile of I18N functionality each cached filesystem implements.  </p>
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#guidelines_fs" id="guidelines_fs">Filesystem I18N Guidelines</a>
 </h1>
@@ -625,7 +629,7 @@
 <a href="#rfc.section.2.2">2.2.</a> <a href="#guidelines_fs_case" id="guidelines_fs_case">Filesystem I18N Guidelines: Case-Insensitivity</a>
 </h1>
 <p id="rfc.section.2.2.p.1">Filesystems MAY support case-insensitivity, in which case they SHOULD be case-preserving.  Filesystems that are case-insensitive but not case-preserving either MUST upcase or downcase all characters of file names, or MUST upcase the first character of file names and downcase the rest (a.k.a., "sentence case").  </p>
-<p id="rfc.section.2.2.p.2">Case mappings for case-insensitive filesystems MUST be identified.  The default case mappings MUST be the default case algorithms for the identified Unicode version without additional tailoring.  Filesystems that use case algorithms tailored to specific locales SHOULD use case mappings registered in an IANA registry to be created along with this document.  </p>
+<p id="rfc.section.2.2.p.2">Case foldings for case-insensitive filesystems MUST be identified.  The default case foldings MUST be the default case algorithms for the identified Unicode version without additional tailoring.  Filesystems that use case algorithms tailored to specific locales SHOULD use case foldings registered in an IANA registry to be created along with this document.  </p>
 <p id="rfc.section.2.2.p.3">Case-insensitive filesystems MUST specify a Unicode version for their case-insensitive behavior.  </p>
 <h1 id="rfc.section.2.3">
 <a href="#rfc.section.2.3">2.3.</a> <a href="#guidelines_fs_i18n_versioning" id="guidelines_fs_i18n_versioning">I18N Versioning</a>
@@ -639,15 +643,15 @@
 <ul>
 <li>whether the filesystem normalizes on CREATE (and LOOKUP), and if so, to what NF in what Unicode version;</li>
 <li>whether the filesystem is form-insensitive and form-preserving, and if so, in what Unicode version;</li>
-<li>whether the filesystem is case-insensitive and case-preserving, and if so, with what mappings (default or tailured, and if tailored provide an identifier for the set of mappings), and a Unicode version.</li>
+<li>whether the filesystem is case-insensitive and case-preserving, and if so, with what foldings (default or tailured, and if tailored provide an identifier for the set of foldings), and a Unicode version.</li>
 </ul>
 
-<p> Mappings are identified via a mapping set name as registered in an IANA registry created along with this document.  </p>
+<p> Foldings are identified via a folding set name as registered in an IANA registry created along with this document.  </p>
 <p id="rfc.section.3.p.2">File servers MUST reject attempts to create new non-Unicode file names.  </p>
 <h1 id="rfc.section.3.1">
 <a href="#rfc.section.3.1">3.1.</a> <a href="#guidelines_caching" id="guidelines_caching">I18N and Caching in Filesystem Protocol Clients</a>
 </h1>
-<p id="rfc.section.3.1.p.1">Caching clients of remote filesystems either MUST NOT perform lookups against cached directory listings, or MUST query the directories' filesystems' I18N profiles and apply the same I18N equivalent form policis and case-insensitivity case mappings.  </p>
+<p id="rfc.section.3.1.p.1">Caching clients of remote filesystems either MUST NOT perform lookups against cached directory listings, or MUST query the directories' filesystems' I18N profiles and apply the same I18N equivalent form policis and case-insensitivity case foldings.  </p>
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#cons_i18n" id="cons_i18n">Internationalization Considerations</a>
 </h1>
@@ -655,17 +659,17 @@
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#cons_iana" id="cons_iana">IANA Considerations</a>
 </h1>
-<p id="rfc.section.5.p.1">[ALTERNATIVELY use locale names and CLDR?  Need to establish stability...] </p>
+<p id="rfc.section.5.p.1">[ALTERNATIVELY use locale names and CLDR?  Need to establish stability...  But CLDR ] </p>
 <p id="rfc.section.5.p.2">We hereby request the creation of a new IANA registry with Expert Review registration rules with the following fields: </p>
 
 <ul>
 <li>name, an identifier-like name</li>
 <li>Unicode version number</li>
-<li>listing of case mapping tailorings and/or references to external case mapping tailoring specifications</li>
+<li>listing of case folding tailorings and/or references to external case folding tailoring specifications</li>
 </ul>
 
 <p> </p>
-<p id="rfc.section.5.p.3">The case mappings registered here will be used by case-insensitive filesystems and filesystem protocols to identify tailored case mappings so that caching clients can implement the same case-insensitive behavior using cached directory listings.  </p>
+<p id="rfc.section.5.p.3">The case foldings registered here will be used by case-insensitive filesystems and filesystem protocols to identify tailored case foldings so that caching clients can implement the same case-insensitive behavior using cached directory listings.  </p>
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#cons_sec" id="cons_sec">Security Considerations</a>
 </h1>
