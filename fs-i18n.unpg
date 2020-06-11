@@ -4,8 +4,8 @@
 
 Internet Engineering Task Force                         N. Williams, Ed.
 Internet-Draft                                         Cryptonector, LLC
-Intended status: Best Current Practice                     June 10, 2020
-Expires: December 12, 2020
+Intended status: Best Current Practice                     June 11, 2020
+Expires: December 13, 2020
 
 
    Internationalization Considerations for Filesystems and Filesystem
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 12, 2020.
+   This Internet-Draft will expire on December 13, 2020.
 
 Copyright Notice
 
@@ -60,7 +60,7 @@ Table of Contents
    1.  Introduction
    1.1.  Requirements Language
    1.2.  Filesystem Internationalization
-   1.2.1.  Normalization
+   1.2.1.  Canonical Equivalence (Normalization)
    1.2.2.  Case Foldings for Case-Insensitivity
    1.3.  Running Code Architecture Notes
    2.  Filesystem I18N Guidelines
@@ -134,11 +134,11 @@ Table of Contents
    folding tables, but also localized case-folding tables as case-
    folding rules might differ from languages to language.
 
-1.2.1.  Normalization
+1.2.1.  Canonical Equivalence (Normalization)
 
-   For case-sensitive filesystems, only equivalence issues arise as to
-   file names and file paths.  These can be addressed in one of two
-   ways:
+   For case-sensitive filesystems, only Unicode canonical equivalence
+   issues arise as to file names and file paths.  These can be addressed
+   in one of two ways:
 
    o  normalize file names when created and when looked up,
 
@@ -156,6 +156,17 @@ Table of Contents
    on the wire, but permits only one form of any string, whether normal
    or not.  We shall term this option "form-insensitive", or sometimes
    "form-insensitive and form-preserving", or just "f-i/p".
+
+   Unicode compatibility equivalence allows equivalence between
+   different representations of the same abstract character that may
+   nonetheless have different visual appearance of behavior.  There are
+   two canonical forms that support compatibility equivalence: NFKC and
+   NFKD.  Using normalize-on-CREATE with NFKC or NFKD is may be
+   surprising to users in a visual way.  While form-insensitivity with
+   NFKC or NFKD may surprise users who might consider two file names
+   distinct when Unicode considers them equivalent under compatibility
+   equivalence.  The latter seems less likely and less surprising,
+   though that is an entirely subjective judgement.
 
 1.2.2.  Case Foldings for Case-Insensitivity
 
@@ -227,20 +238,22 @@ Table of Contents
 
    o  ZFS, which implements form-insensitive, form-preserving behavior
       and optionally implements case-insensitive, case-preserving
-      behavior on a per-filesystem bases.
+      behavior on a per-filesystem basis.
 
-   Filesystem protocol server implementations almost always, if not
-   always, reside above the VFS layer in general purpose operating
-   systems.
+   There are filesystem servers that access raw storage directly and
+   implement the filesystem and the remote filesystem protocol server in
+   one monolythic stack, but it is very common to have remote filesystem
+   protocol servers implemented on top of the VFS or on top of the
+   system calls.
 
-   Altogether, these circumstances make it very difficult to reliably
-   locate I18N functionality above the VFS: there are too many places to
-   alter, and all must agree exactly on I18N choices.  Moreover,
-   implementing case-insensitive but case-preserving behavior above the
-   VFS requires reading a directory, and so does implementing form-
-   insensitive and form-preserving behavior.  The only behaviors that
-   can be reliably implemented above the VFS are normalize- and case-
-   fold- on-CREATE.
+   Altogether, these circumstances make it very difficult to reliably an
+   dalways locate I18N functionality above the VFS, or to not use a VFS
+   at all: there are too many places to alter, and all must agree
+   exactly on I18N choices.  Moreover, implementing case-insensitive but
+   case-preserving behavior above the VFS requires reading a directory,
+   and so does implementing form-insensitive and form-preserving
+   behavior.  The only behaviors that can be reliably implemented above
+   the VFS are normalize- and case-fold-on-CREATE.
 
    Consider the set of already-running code that must all be modified in
    order to reliably implement I18N on general purpose operating
@@ -396,6 +409,10 @@ Table of Contents
    Foldings are identified via a folding set name as registered in an
    IANA registry created along with this document.
 
+   Because some filesystems might allow for different I18N settings on a
+   per-directory basis, remote filesystem protocols SHOULD allow those
+   settings to be discoverable on a per-directory basis.
+
    File servers MUST reject attempts to create new non-Unicode file
    names.
 
@@ -414,8 +431,9 @@ Table of Contents
 
 5.  IANA Considerations
 
-   [ALTERNATIVELY use locale names and CLDR?  Need to establish
-   stability...  But CLDR ]
+   [ALTERNATIVELY use locale names and CLDR?  Need to determine the
+   stability of CLDR locales...  Basically, we need stable locale names,
+   and stable case-folding mappings.]
 
    We hereby request the creation of a new IANA registry with Expert
    Review registration rules with the following fields:

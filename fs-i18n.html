@@ -377,7 +377,7 @@
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
 <link href="#rfc.section.1.1" rel="Chapter" title="1.1 Requirements Language">
 <link href="#rfc.section.1.2" rel="Chapter" title="1.2 Filesystem Internationalization">
-<link href="#rfc.section.1.2.1" rel="Chapter" title="1.2.1 Normalization">
+<link href="#rfc.section.1.2.1" rel="Chapter" title="1.2.1 Canonical Equivalence (Normalization)">
 <link href="#rfc.section.1.2.2" rel="Chapter" title="1.2.2 Case Foldings for Case-Insensitivity">
 <link href="#rfc.section.1.3" rel="Chapter" title="1.3 Running Code Architecture Notes">
 <link href="#rfc.section.2" rel="Chapter" title="2 Filesystem I18N Guidelines">
@@ -400,7 +400,7 @@
 
   <meta name="dct.creator" content="Williams, N., Ed." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-williams-filesystem-18n-00" />
-  <meta name="dct.issued" scheme="ISO8601" content="2020-10" />
+  <meta name="dct.issued" scheme="ISO8601" content="2020-11" />
   <meta name="dct.abstract" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
   <meta name="description" content="This document describes requirements for internationalization (I18n) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most existing general purpose operating systems, and their implications for filesystem internationalization.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
 
@@ -421,10 +421,10 @@
 </tr>
 <tr>
 <td class="left">Intended status: Best Current Practice</td>
-<td class="right">June 10, 2020</td>
+<td class="right">June 11, 2020</td>
 </tr>
 <tr>
-<td class="left">Expires: December 12, 2020</td>
+<td class="left">Expires: December 13, 2020</td>
 <td class="right"></td>
 </tr>
 
@@ -441,7 +441,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on December 12, 2020.</p>
+<p>This Internet-Draft will expire on December 13, 2020.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2020 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -457,7 +457,7 @@
 </li>
 <li>1.2.   <a href="#rfc.section.1.2">Filesystem Internationalization</a>
 </li>
-<ul><li>1.2.1.   <a href="#rfc.section.1.2.1">Normalization</a>
+<ul><li>1.2.1.   <a href="#rfc.section.1.2.1">Canonical Equivalence (Normalization)</a>
 </li>
 <li>1.2.2.   <a href="#rfc.section.1.2.2">Case Foldings for Case-Insensitivity</a>
 </li>
@@ -532,9 +532,9 @@
 <p id="rfc.section.1.2.p.3">For some glyphs there is a single way to write them.  For others there are two.  And for yet others there can be many more than two.  To deal with this, Unicode defines Normal Forms (NFs), of which there are two basic ones: Normal Form Composed (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use "compatibility" Foldings, NFKC and NFKD.  Unicode-aware applications can normalize text to avoid ambiguities, or they can use form-insensitive string comparisons, or both.  </p>
 <p id="rfc.section.1.2.p.4">Some filesystems support case-insensitivity, which is trivial for US-ASCII, but non-trivial for Unicode, requiring not only larger case-folding tables, but also localized case-folding tables as case-folding rules might differ from languages to language.  </p>
 <h1 id="rfc.section.1.2.1">
-<a href="#rfc.section.1.2.1">1.2.1.</a> <a href="#intro_norm" id="intro_norm">Normalization</a>
+<a href="#rfc.section.1.2.1">1.2.1.</a> <a href="#intro_norm" id="intro_norm">Canonical Equivalence (Normalization)</a>
 </h1>
-<p id="rfc.section.1.2.1.p.1">For case-sensitive filesystems, only equivalence issues arise as to file names and file paths.  These can be addressed in one of two ways: </p>
+<p id="rfc.section.1.2.1.p.1">For case-sensitive filesystems, only Unicode canonical equivalence issues arise as to file names and file paths.  These can be addressed in one of two ways: </p>
 
 <ul>
 <li>normalize file names when created and when looked up,</li>
@@ -544,6 +544,7 @@
 <p> </p>
 <p id="rfc.section.1.2.1.p.2">The first option yields normalized file names on-disk and on the wire (e.g., when listing directories).  We shall term this "normalize-on-CREATE", or sometimes "normalize-on-CREATE-and-LOOKUP", or just "n-c/l".  </p>
 <p id="rfc.section.1.2.1.p.3">The second option preserves form as originally intended (if intended) or produced by the user or on their behalf by their systems' text input modes, but is form-insensitive.  That is, this option permits either encoding of, e.g., LATIN SMALL LETTER A WITH ACUTE on-disk and on the wire, but permits only one form of any string, whether normal or not.  We shall term this option "form-insensitive", or sometimes "form-insensitive and form-preserving", or just "f-i/p".  </p>
+<p id="rfc.section.1.2.1.p.4">Unicode compatibility equivalence allows equivalence between different representations of the same abstract character that may nonetheless have different visual appearance of behavior.  There are two canonical forms that support compatibility equivalence: NFKC and NFKD.  Using normalize-on-CREATE with NFKC or NFKD is may be surprising to users in a visual way.  While form-insensitivity with NFKC or NFKD may surprise users who might consider two file names distinct when Unicode considers them equivalent under compatibility equivalence.  The latter seems less likely and less surprising, though that is an entirely subjective judgement.  </p>
 <h1 id="rfc.section.1.2.2">
 <a href="#rfc.section.1.2.2">1.2.2.</a> <a href="#intro_case" id="intro_case">Case Foldings for Case-Insensitivity</a>
 </h1>
@@ -577,12 +578,12 @@
 
 <ul>
 <li>HFS+, which does normalize-on-CREATE (and LOOKUP), normalizing to a form that is very close to NFD and is case-sensitive;</li>
-<li>ZFS, which implements form-insensitive, form-preserving behavior and optionally implements case-insensitive, case-preserving behavior on a per-filesystem bases.  </li>
+<li>ZFS, which implements form-insensitive, form-preserving behavior and optionally implements case-insensitive, case-preserving behavior on a per-filesystem basis.  </li>
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.5">Filesystem protocol server implementations almost always, if not always, reside above the VFS layer in general purpose operating systems.  </p>
-<p id="rfc.section.1.3.p.6">Altogether, these circumstances make it very difficult to reliably locate I18N functionality above the VFS: there are too many places to alter, and all must agree exactly on I18N choices.  Moreover, implementing case-insensitive but case-preserving behavior above the VFS requires reading a directory, and so does implementing form-insensitive and form-preserving behavior.  The only behaviors that can be reliably implemented above the VFS are normalize- and case-fold- on-CREATE.  </p>
+<p id="rfc.section.1.3.p.5">There are filesystem servers that access raw storage directly and implement the filesystem and the remote filesystem protocol server in one monolythic stack, but it is very common to have remote filesystem protocol servers implemented on top of the VFS or on top of the system calls.  </p>
+<p id="rfc.section.1.3.p.6">Altogether, these circumstances make it very difficult to reliably an dalways locate I18N functionality above the VFS, or to not use a VFS at all: there are too many places to alter, and all must agree exactly on I18N choices.  Moreover, implementing case-insensitive but case-preserving behavior above the VFS requires reading a directory, and so does implementing form-insensitive and form-preserving behavior.  The only behaviors that can be reliably implemented above the VFS are normalize- and case-fold-on-CREATE.  </p>
 <p id="rfc.section.1.3.p.7">Consider the set of already-running code that must all be modified in order to reliably implement I18N on general purpose operating systems: </p>
 
 <ul>
@@ -647,7 +648,8 @@
 </ul>
 
 <p> Foldings are identified via a folding set name as registered in an IANA registry created along with this document.  </p>
-<p id="rfc.section.3.p.2">File servers MUST reject attempts to create new non-Unicode file names.  </p>
+<p id="rfc.section.3.p.2">Because some filesystems might allow for different I18N settings on a per-directory basis, remote filesystem protocols SHOULD allow those settings to be discoverable on a per-directory basis.  </p>
+<p id="rfc.section.3.p.3">File servers MUST reject attempts to create new non-Unicode file names.  </p>
 <h1 id="rfc.section.3.1">
 <a href="#rfc.section.3.1">3.1.</a> <a href="#guidelines_caching" id="guidelines_caching">I18N and Caching in Filesystem Protocol Clients</a>
 </h1>
@@ -659,7 +661,7 @@
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#cons_iana" id="cons_iana">IANA Considerations</a>
 </h1>
-<p id="rfc.section.5.p.1">[ALTERNATIVELY use locale names and CLDR?  Need to establish stability...  But CLDR ] </p>
+<p id="rfc.section.5.p.1">[ALTERNATIVELY use locale names and CLDR?  Need to determine the stability of CLDR locales...  Basically, we need stable locale names, and stable case-folding mappings.] </p>
 <p id="rfc.section.5.p.2">We hereby request the creation of a new IANA registry with Expert Review registration rules with the following fields: </p>
 
 <ul>

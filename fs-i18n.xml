@@ -149,11 +149,11 @@
           language.
         </t>
 
-        <section anchor="intro_norm" title="Normalization">
+        <section anchor="intro_norm" title="Canonical Equivalence (Normalization)">
           <t>
-            For case-sensitive filesystems, only equivalence issues arise as
-            to file names and file paths.  These can be addressed in one of
-            two ways:
+            For case-sensitive filesystems, only Unicode canonical
+            equivalence issues arise as to file names and file paths.
+            These can be addressed in one of two ways:
             <list style="symbols">
               <t>normalize file names when created and when looked up,</t>
               <t>perform form-insensitive string comparisons on lookup.</t>
@@ -176,6 +176,21 @@
             one form of any string, whether normal or not.  We shall term
             this option "form-insensitive", or sometimes "form-insensitive
             and form-preserving", or just "f-i/p".
+          </t>
+
+          <t>
+            Unicode compatibility equivalence allows equivalence between
+            different representations of the same abstract character
+            that may nonetheless have different visual appearance of
+            behavior.  There are two canonical forms that support
+            compatibility equivalence: NFKC and NFKD.  Using
+            normalize-on-CREATE with NFKC or NFKD is may be surprising
+            to users in a visual way.  While form-insensitivity with NFKC
+            or NFKD may surprise users who might consider two file names
+            distinct when Unicode considers them equivalent under
+            compatibility equivalence.  The latter seems less likely and
+            less surprising, though that is an entirely subjective
+            judgement.
           </t>
         </section>
 
@@ -267,27 +282,29 @@
             <t>
               ZFS, which implements form-insensitive, form-preserving
               behavior and optionally implements case-insensitive,
-              case-preserving behavior on a per-filesystem bases.
+              case-preserving behavior on a per-filesystem basis.
             </t>
           </list>
         </t>
 
         <t>
-          Filesystem protocol server implementations almost always, if not
-          always, reside above the VFS layer in general purpose operating
-          systems.
+          There are filesystem servers that access raw storage directly
+          and implement the filesystem and the remote filesystem
+          protocol server in one monolythic stack, but it is very common
+          to have remote filesystem protocol servers implemented on top
+          of the VFS or on top of the system calls.
         </t>
 
         <t>
           Altogether, these circumstances make it very difficult to
-          reliably locate I18N functionality above the VFS: there are too
-          many places to alter, and all must agree exactly on I18N
-          choices.  Moreover, implementing case-insensitive but
-          case-preserving behavior above the VFS requires reading a
-          directory, and so does implementing form-insensitive and
-          form-preserving behavior.  The only behaviors that can be
-          reliably implemented above the VFS are normalize- and case-fold-
-          on-CREATE.
+          reliably an dalways locate I18N functionality above the VFS,
+          or to not use a VFS at all: there are too many places to
+          alter, and all must agree exactly on I18N choices.  Moreover,
+          implementing case-insensitive but case-preserving behavior
+          above the VFS requires reading a directory, and so does
+          implementing form-insensitive and form-preserving behavior.
+          The only behaviors that can be reliably implemented above the
+          VFS are normalize- and case-fold-on-CREATE.
         </t>
 
         <t>
@@ -493,6 +510,13 @@
       </t>
 
       <t>
+        Because some filesystems might allow for different I18N settings
+        on a per-directory basis, remote filesystem protocols SHOULD
+        allow those settings to be discoverable on a per-directory
+        basis.
+      </t>
+
+      <t>
         File servers MUST reject attempts to create new non-Unicode file
         names.
       </t>
@@ -518,8 +542,9 @@
 
     <section anchor="cons_iana" title="IANA Considerations">
       <t>
-        [ALTERNATIVELY use locale names and CLDR?  Need to establish
-        stability...  But CLDR ]
+        [ALTERNATIVELY use locale names and CLDR?  Need to determine
+        the stability of CLDR locales...  Basically, we need stable
+        locale names, and stable case-folding mappings.]
       </t>
 
       <t>
