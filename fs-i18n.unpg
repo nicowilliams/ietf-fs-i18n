@@ -4,8 +4,8 @@
 
 Internet Engineering Task Force                         N. Williams, Ed.
 Internet-Draft                                         Cryptonector, LLC
-Intended status: Best Current Practice                     June 28, 2020
-Expires: December 30, 2020
+Intended status: Best Current Practice                      July 6, 2020
+Expires: January 7, 2021
 
 
    Internationalization Considerations for Filesystems and Filesystem
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 30, 2020.
+   This Internet-Draft will expire on January 7, 2021.
 
 Copyright Notice
 
@@ -76,6 +76,7 @@ Table of Contents
    7.  References
    7.1.  Normative References
    7.2.  Informative References
+   7.3.  URIs
    Author's Address
 
 1.  Introduction
@@ -227,14 +228,15 @@ Table of Contents
 
    Surprisingly, almost all if not all general purpose operating systems
    in common use today have a "virtual filesystem switch" (VFS)
-   interface that permits the use of multiple different filesystem types
-   on one system.  The VFS is essentially a pluggable programming
-   interface that includes functionality for routing calls from user
-   processes to the appropriate filesystems.  The VFS has even been
-   generalized and extended to support isolation, thus we have the
-   Filesystem in Userspace (FUSE), which is akin to a remote filesystem
-   protocol, but for use over local inter-process communications (IPC)
-   facilities.
+   [McKusick86] [wikipedia] [1] interface that permits the use of
+   multiple different filesystem types on one system, all accessed
+   through the same filesystems application programming interfaces
+   (APIs).  The VFS is essentially a pluggable layer that includes
+   functionality for routing calls from user processes to the
+   appropriate filesystems.  The VFS has even been generalized and
+   extended to support isolation, thus we have the Filesystem in
+   Userspace (FUSE), which is akin to a remote filesystem protocol, but
+   for use over local inter-process communications (IPC) facilities.
 
    The VFS architecture was developed in the 1980s, before Unicode
    adoption.  It is not surprising then that in general -if not simply
@@ -248,11 +250,19 @@ Table of Contents
    o  use of US-ASCII '/' and/or '\' (for file path component
       delimiting).
 
+   For example, the 4.4BSD operating system and derivatives have a VFS
+   [BSD4.4], as do Solaris and derivatives [SolarisInternals], Windows
+   <https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/>, OS
+   X, and Linux.  A VFS of a sort, including FUSE, may well be the only
+   reasonable way to support more than one kind of filesystem while
+   retaining compatibility with previously-existing filesystem APIs.
+   This explains why so many modern operating systems have a VFS.
+
    Thus in most if not all general purpose operating systems today, the
    code path from the boundary between the application and the operating
    system, and the boundary between the VFS and the filesystem, is
-   "just-use-8" or "just-use-16" (as in UTF-16), with no attempt at
-   normalization or case folding done anywhere in between.
+   "just-use-8" or "just-use-16" (as in UTF-16 [UNICODE]), with no
+   attempt at normalization or case folding done anywhere in between.
 
    There are filesystem servers that access raw storage directly and
    implement the filesystem and the remote filesystem protocol server in
@@ -507,12 +517,28 @@ Table of Contents
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
+   [RFC3629]  Yergeau, F., "UTF-8, a transformation format of ISO
+              10646", STD 63, RFC 3629, DOI 10.17487/RFC3629, November
+              2003, <https://www.rfc-editor.org/info/rfc3629>.
+
+   [UNICODE]  The Unicode Consortium, "The Unicode Standard, Version
+              12.1.0", May 2019,
+              <https://www.unicode.org/versions/Unicode12.1.0/>.
+
 7.2.  Informative References
+
+   [BSD4.4]   McKusik, M., Bostic, K., Karels, M., and J. Quarterman,
+              "The Design and Implementation of the 4.4BSD Operating
+              System", DOI 10.5555/231070, 1996.
 
    [I-D.ietf-secsh-filexfer]
               Galbraith, J. and O. Saarenmaa, "SSH File Transfer
               Protocol", draft-ietf-secsh-filexfer-13 (work in
               progress), July 2006.
+
+   [McKusick86]
+              McKusik, M. and M. Karels, "Towards a Compatible File
+              System Interface", Jun 1986.
 
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66,
@@ -531,6 +557,14 @@ Table of Contents
    [RFC7530]  Haynes, T., Ed. and D. Noveck, Ed., "Network File System
               (NFS) Version 4 Protocol", RFC 7530, DOI 10.17487/RFC7530,
               March 2015, <https://www.rfc-editor.org/info/rfc7530>.
+
+   [SolarisInternals]
+              McDougal, R. and J. Mauro, "Solaris Internals -- Solaris
+              10 and OpenSolaris Kernel Architecture", 2007.
+
+7.3.  URIs
+
+   [1] https://en.wikipedia.org/wiki/Virtual_file_system
 
 Author's Address
 

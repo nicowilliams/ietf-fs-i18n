@@ -401,7 +401,7 @@
 
   <meta name="dct.creator" content="Williams, N., Ed." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-williams-filesystem-18n-00" />
-  <meta name="dct.issued" scheme="ISO8601" content="2020-28" />
+  <meta name="dct.issued" scheme="ISO8601" content="2020-06" />
   <meta name="dct.abstract" content="This document describes requirements for internationalization (I18N) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most currently popular general purpose operating systems, and their implications for filesystem I18N.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
   <meta name="description" content="This document describes requirements for internationalization (I18N) of filesystems specifically in the context of Internet protocols, the architecture for filesystems in most currently popular general purpose operating systems, and their implications for filesystem I18N.  From the I18N requirements for filesystems and the architecture of running code we derive requirements and recommendations for implementors of operating systems and/or filesystems, as well as for Internet remote filesystem protocols.  " />
 
@@ -422,10 +422,10 @@
 </tr>
 <tr>
 <td class="left">Intended status: Best Current Practice</td>
-<td class="right">June 28, 2020</td>
+<td class="right">July 6, 2020</td>
 </tr>
 <tr>
-<td class="left">Expires: December 30, 2020</td>
+<td class="left">Expires: January 7, 2021</td>
 <td class="right"></td>
 </tr>
 
@@ -442,7 +442,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on December 30, 2020.</p>
+<p>This Internet-Draft will expire on January 7, 2021.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2020 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -573,7 +573,7 @@
 <h1 id="rfc.section.1.3">
 <a href="#rfc.section.1.3">1.3.</a> <a href="#arch_notes" id="arch_notes">Running Code Architecture Notes</a>
 </h1>
-<p id="rfc.section.1.3.p.1">Surprisingly, almost all if not all general purpose operating systems in common use today have a "virtual filesystem switch" (VFS) interface that permits the use of multiple different filesystem types on one system.  The VFS is essentially a pluggable programming interface that includes functionality for routing calls from user processes to the appropriate filesystems.  The VFS has even been generalized and extended to support isolation, thus we have the Filesystem in Userspace (FUSE), which is akin to a remote filesystem protocol, but for use over local inter-process communications (IPC) facilities.  </p>
+<p id="rfc.section.1.3.p.1">Surprisingly, almost all if not all general purpose operating systems in common use today have a "virtual filesystem switch" (VFS) <a href="#McKusick86" class="xref">[McKusick86]</a> <a href="https://en.wikipedia.org/wiki/Virtual_file_system">[wikipedia]</a> interface that permits the use of multiple different filesystem types on one system, all accessed through the same filesystems application programming interfaces (APIs).  The VFS is essentially a pluggable layer that includes functionality for routing calls from user processes to the appropriate filesystems.  The VFS has even been generalized and extended to support isolation, thus we have the Filesystem in Userspace (FUSE), which is akin to a remote filesystem protocol, but for use over local inter-process communications (IPC) facilities.  </p>
 <p id="rfc.section.1.3.p.2">The VFS architecture was developed in the 1980s, before Unicode adoption.  It is not surprising then that in general -if not simply always today- the code path from the interface between a user application and the operating system all the way to the filesystem implements no I18N functionality whatsoever, and does the absolute minimum of character data interpretation: </p>
 
 <ul>
@@ -582,9 +582,10 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.3">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" or "just-use-16" (as in UTF-16), with no attempt at normalization or case folding done anywhere in between.  </p>
-<p id="rfc.section.1.3.p.4">There are filesystem servers that access raw storage directly and implement the filesystem and the remote filesystem protocol server in one monolythic stack without a VFS in the way, but it is very common to have remote filesystem protocol servers implemented on top of the VFS or on top of the system calls.  Even monolythic servers tend to support a notion of multiple filesystems in a server or volume, and may have different I18N settings for each filesystem.  Thus it's common to leave I18N handling to code layers close to the filesystem even in monolythic server implementations.  </p>
-<p id="rfc.section.1.3.p.5">In practice all of foregoing has led to I18N functionality residing strictly in the filesystem.  Two filesystems have defined the best current practices in this regard: </p>
+<p id="rfc.section.1.3.p.3">For example, the 4.4BSD operating system and derivatives have a VFS <a href="#BSD4.4" class="xref">[BSD4.4]</a>, as do Solaris and derivatives <a href="#SolarisInternals" class="xref">[SolarisInternals]</a>, Windows <span>&lt;</span><a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/">https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/</a><span>&gt;</span>, OS X, and Linux.  A VFS of a sort, including FUSE, may well be the only reasonable way to support more than one kind of filesystem while retaining compatibility with previously-existing filesystem APIs.  This explains why so many modern operating systems have a VFS.  </p>
+<p id="rfc.section.1.3.p.4">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" or "just-use-16" (as in UTF-16 <a href="#UNICODE" class="xref">[UNICODE]</a>), with no attempt at normalization or case folding done anywhere in between.  </p>
+<p id="rfc.section.1.3.p.5">There are filesystem servers that access raw storage directly and implement the filesystem and the remote filesystem protocol server in one monolythic stack without a VFS in the way, but it is very common to have remote filesystem protocol servers implemented on top of the VFS or on top of the system calls.  Even monolythic servers tend to support a notion of multiple filesystems in a server or volume, and may have different I18N settings for each filesystem.  Thus it's common to leave I18N handling to code layers close to the filesystem even in monolythic server implementations.  </p>
+<p id="rfc.section.1.3.p.6">In practice all of foregoing has led to I18N functionality residing strictly in the filesystem.  Two filesystems have defined the best current practices in this regard: </p>
 
 <ul>
 <li>HFS+, which does normalize-on-CREATE (and LOOKUP), normalizing to a form that is very close to NFD and is case-sensitive; </li>
@@ -592,8 +593,8 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.6">Altogether, these circumstances make it very difficult to reliably and always locate I18N functionality above the VFS, or to not use a VFS at all: there are too many places to alter, and all must agree exactly on I18N choices.  Moreover, implementing case-insensitive but case-preserving behavior above the VFS requires fully reading each directory, and so does implementing form-insensitive and form-preserving behavior at the VFS layer itself.  The only behaviors that can be reliably implemented at or above the VFS are normalize- and case-fold-on-CREATE (and LOOKUP).  </p>
-<p id="rfc.section.1.3.p.7">Consider the set of already-running code that must all be modified in order to reliably implement I18N above the filesystem on general purpose operating systems: </p>
+<p id="rfc.section.1.3.p.7">Altogether, these circumstances make it very difficult to reliably and always locate I18N functionality above the VFS, or to not use a VFS at all: there are too many places to alter, and all must agree exactly on I18N choices.  Moreover, implementing case-insensitive but case-preserving behavior above the VFS requires fully reading each directory, and so does implementing form-insensitive and form-preserving behavior at the VFS layer itself.  The only behaviors that can be reliably implemented at or above the VFS are normalize- and case-fold-on-CREATE (and LOOKUP).  </p>
+<p id="rfc.section.1.3.p.8">Consider the set of already-running code that must all be modified in order to reliably implement I18N above the filesystem on general purpose operating systems: </p>
 
 <ul>
 <li>filesystem protocol servers, including but not limited to: <ul>
@@ -609,13 +610,13 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.8">Regarding system calls and system call stubs in user process system libraries, the continued use of statically-linked executables means that these cannot reliably be modified.  Indeed, on some systems the Application Binary Interface (ABI) between user-space applications and the operating system kernel is well-defined and long-term stable.  The system call handlers cannot reliably inspect the calling process to determine any attributes of its locale.  Adding new system calls is possible, but existing running code wouldn't use them.  For similar reasons, the VFS layer is generally (always) completely unaware of any attributes of the locale of applications calling it, whether via system calls or any other path.  </p>
-<p id="rfc.section.1.3.p.9">Unix-like operating systems are generally (always) "just-use-8", assuming only that file names and paths are C strings (i.e., terminated by zero-valued bytes) and sufficiently compatible with US-ASCII that the file path component separator character, US-ASCII '/', is meaningful.  As a result, it is possible to find I18N-unaware filesystems with one or more non-Unicode, non-ASCII codesets in use for file names!  We leave non-ASCII and non-Unicode file names out of scope here.  </p>
-<p id="rfc.section.1.3.p.10">For these reasons it is simply not practical to implement I18N at any layer above the VFS.  </p>
-<p id="rfc.section.1.3.p.11">Even in the VFS, form- and case-insensitive and -preserving behaviors would be difficult to implement as performantly as in the filesystem.  The VFS would have to list a directory completely before being able to apply those behaviors.  It is reasonable to expect caching clients of remote filesystems to cache directory listings (especially for offline operation), but it isn't reasonable to expect the same of the VFS.  Compare to the filesystem itself, which can maintain a fast index (e.g., hash table or b-tree) where the keys are normalized and possibly case-folded file names and thus may not need to read directories in order to perform fast lookups that are form- and even case-insensitive.  </p>
-<p id="rfc.section.1.3.p.12">The only way to implement I18N behaviors in the VFS layer rather than at the filesystem is to abandon form- and case-preserving behaviors.  For case-insensitivity this would require using sentence-case, or all lower-case, perhaps, and all such choices would surely be surprising to users.  At any rate, that approach would also render much running code "non-compliant" with any Internet filesystem protocol I18N specification.  </p>
-<p id="rfc.section.1.3.p.13">Therefore, generally speaking, only the filesystem can reliably, interoperably, and performantly implement I18N behaviors in general purpose operating systems.  </p>
-<p id="rfc.section.1.3.p.14">Note that variations in I18N behaviors can happen even on the same server with multiple filesystems of the same type.  This can happen because of </p>
+<p id="rfc.section.1.3.p.9">Regarding system calls and system call stubs in user process system libraries, the continued use of statically-linked executables means that these cannot reliably be modified.  Indeed, on some systems the Application Binary Interface (ABI) between user-space applications and the operating system kernel is well-defined and long-term stable.  The system call handlers cannot reliably inspect the calling process to determine any attributes of its locale.  Adding new system calls is possible, but existing running code wouldn't use them.  For similar reasons, the VFS layer is generally (always) completely unaware of any attributes of the locale of applications calling it, whether via system calls or any other path.  </p>
+<p id="rfc.section.1.3.p.10">Unix-like operating systems are generally (always) "just-use-8", assuming only that file names and paths are C strings (i.e., terminated by zero-valued bytes) and sufficiently compatible with US-ASCII that the file path component separator character, US-ASCII '/', is meaningful.  As a result, it is possible to find I18N-unaware filesystems with one or more non-Unicode, non-ASCII codesets in use for file names!  We leave non-ASCII and non-Unicode file names out of scope here.  </p>
+<p id="rfc.section.1.3.p.11">For these reasons it is simply not practical to implement I18N at any layer above the VFS.  </p>
+<p id="rfc.section.1.3.p.12">Even in the VFS, form- and case-insensitive and -preserving behaviors would be difficult to implement as performantly as in the filesystem.  The VFS would have to list a directory completely before being able to apply those behaviors.  It is reasonable to expect caching clients of remote filesystems to cache directory listings (especially for offline operation), but it isn't reasonable to expect the same of the VFS.  Compare to the filesystem itself, which can maintain a fast index (e.g., hash table or b-tree) where the keys are normalized and possibly case-folded file names and thus may not need to read directories in order to perform fast lookups that are form- and even case-insensitive.  </p>
+<p id="rfc.section.1.3.p.13">The only way to implement I18N behaviors in the VFS layer rather than at the filesystem is to abandon form- and case-preserving behaviors.  For case-insensitivity this would require using sentence-case, or all lower-case, perhaps, and all such choices would surely be surprising to users.  At any rate, that approach would also render much running code "non-compliant" with any Internet filesystem protocol I18N specification.  </p>
+<p id="rfc.section.1.3.p.14">Therefore, generally speaking, only the filesystem can reliably, interoperably, and performantly implement I18N behaviors in general purpose operating systems.  </p>
+<p id="rfc.section.1.3.p.15">Note that variations in I18N behaviors can happen even on the same server with multiple filesystems of the same type.  This can happen because of </p>
 
 <ul class="empty">
 <li>different Unicode versions being used at the times of creation of various filesystems, and</li>
@@ -623,8 +624,8 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.3.p.15">Locale variations are only relevant to case-folding for case-insensitivity.  Running code mostly uses default case-folding rules, but there is no reason to assume that locale-specific case-folding rules won't be supported by running code in the future.  </p>
-<p id="rfc.section.1.3.p.16">It may not be possible or easy for a filesystem to adopt new Unicode versions, or adopt backwards-incompatible case foldings, after content has been created in it that would be ambiguous under new rules.  This implies that where a client for a remote filesystem must know what I18N functionality to implement for use with cached directory listings, the client must know specifically what profile of I18N functionality each cached filesystem implements.  </p>
+<p id="rfc.section.1.3.p.16">Locale variations are only relevant to case-folding for case-insensitivity.  Running code mostly uses default case-folding rules, but there is no reason to assume that locale-specific case-folding rules won't be supported by running code in the future.  </p>
+<p id="rfc.section.1.3.p.17">It may not be possible or easy for a filesystem to adopt new Unicode versions, or adopt backwards-incompatible case foldings, after content has been created in it that would be ambiguous under new rules.  This implies that where a client for a remote filesystem must know what I18N functionality to implement for use with cached directory listings, the client must know specifically what profile of I18N functionality each cached filesystem implements.  </p>
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#guidelines_fs" id="guidelines_fs">Filesystem I18N Guidelines</a>
 </h1>
@@ -704,18 +705,40 @@
 <a href="#rfc.references">7.</a> References</h1>
 <h1 id="rfc.references.1">
 <a href="#rfc.references.1">7.1.</a> Normative References</h1>
-<table><tbody><tr>
+<table><tbody>
+<tr>
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
 <td class="top">
 <a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
-</tr></tbody></table>
+</tr>
+<tr>
+<td class="reference"><b id="RFC3629">[RFC3629]</b></td>
+<td class="top">
+<a>Yergeau, F.</a>, "<a href="https://tools.ietf.org/html/rfc3629">UTF-8, a transformation format of ISO 10646</a>", STD 63, RFC 3629, DOI 10.17487/RFC3629, November 2003.</td>
+</tr>
+<tr>
+<td class="reference"><b id="UNICODE">[UNICODE]</b></td>
+<td class="top">
+<a>The Unicode Consortium</a>, "<a href="https://www.unicode.org/versions/Unicode12.1.0/">The Unicode Standard, Version 12.1.0</a>", May 2019.</td>
+</tr>
+</tbody></table>
 <h1 id="rfc.references.2">
 <a href="#rfc.references.2">7.2.</a> Informative References</h1>
 <table><tbody>
 <tr>
+<td class="reference"><b id="BSD4.4">[BSD4.4]</b></td>
+<td class="top">
+<a>McKusik, M.</a>, <a>Bostic, K.</a>, <a>Karels, M.</a> and <a>J. Quarterman</a>, "<a>The Design and Implementation of the 4.4BSD Operating System</a>", DOI 10.5555/231070, 1996.</td>
+</tr>
+<tr>
 <td class="reference"><b id="I-D.ietf-secsh-filexfer">[I-D.ietf-secsh-filexfer]</b></td>
 <td class="top">
 <a>Galbraith, J.</a> and <a>O. Saarenmaa</a>, "<a href="https://tools.ietf.org/html/draft-ietf-secsh-filexfer-13">SSH File Transfer Protocol</a>", Internet-Draft draft-ietf-secsh-filexfer-13, July 2006.</td>
+</tr>
+<tr>
+<td class="reference"><b id="McKusick86">[McKusick86]</b></td>
+<td class="top">
+<a>McKusik, M.</a> and <a>M. Karels</a>, "<a>Towards a Compatible File System Interface</a>", Jun 1986.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC3986">[RFC3986]</b></td>
@@ -736,6 +759,11 @@
 <td class="reference"><b id="RFC7530">[RFC7530]</b></td>
 <td class="top">
 <a>Haynes, T.</a> and <a>D. Noveck</a>, "<a href="https://tools.ietf.org/html/rfc7530">Network File System (NFS) Version 4 Protocol</a>", RFC 7530, DOI 10.17487/RFC7530, March 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="SolarisInternals">[SolarisInternals]</b></td>
+<td class="top">
+<a>McDougal, R.</a> and <a>J. Mauro</a>, "<a>Solaris Internals -- Solaris 10 and OpenSolaris Kernel Architecture</a>", 2007.</td>
 </tr>
 </tbody></table>
 <h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>

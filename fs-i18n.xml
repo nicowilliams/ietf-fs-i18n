@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
   <!ENTITY RFC2119 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+  <!ENTITY RFC3629 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3629.xml">
   <!ENTITY RFC3986 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3986.xml">
   <!ENTITY RFC3987 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3987.xml">
   <!ENTITY RFC7230 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7230.xml">
@@ -273,14 +274,18 @@
         <t>
           Surprisingly, almost all if not all general purpose operating
           systems in common use today have a "virtual filesystem switch"
-          (VFS) interface that permits the use of multiple different
-          filesystem types on one system.  The VFS is essentially a
-          pluggable programming interface that includes functionality
-          for routing calls from user processes to the appropriate
-          filesystems.  The VFS has even been generalized and extended
-          to support isolation, thus we have the Filesystem in Userspace
-          (FUSE), which is akin to a remote filesystem protocol, but for
-          use over local inter-process communications (IPC) facilities.
+          (VFS) <xref target="McKusick86"/> <eref
+            target='https://en.wikipedia.org/wiki/Virtual_file_system'>[wikipedia]</eref>
+          interface that permits the use of multiple different
+          filesystem types on one system, all accessed through the same
+          filesystems application programming interfaces (APIs).  The
+          VFS is essentially a pluggable layer that includes
+          functionality for routing calls from user processes to the
+          appropriate filesystems.  The VFS has even been generalized
+          and extended to support isolation, thus we have the Filesystem
+          in Userspace (FUSE), which is akin to a remote filesystem
+          protocol, but for use over local inter-process communications
+          (IPC) facilities.
         </t>
 
         <t>
@@ -298,12 +303,24 @@
         </t>
 
         <t>
+          For example, the 4.4BSD operating system and derivatives have
+          a VFS <xref target="BSD4.4"/>, as do Solaris and derivatives
+          <xref target="SolarisInternals"/>, Windows <eref
+            target="https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/"/>,
+          OS X, and Linux.  A VFS of a sort, including FUSE, may well be
+          the only reasonable way to support more than one kind of
+          filesystem while retaining compatibility with
+          previously-existing filesystem APIs.  This explains why so
+          many modern operating systems have a VFS.
+        </t>
+
+        <t>
           Thus in most if not all general purpose operating systems
           today, the code path from the boundary between the application
           and the operating system, and the boundary between the VFS and
           the filesystem, is "just-use-8" or "just-use-16" (as in
-          UTF-16), with no attempt at normalization or case folding done
-          anywhere in between.
+          UTF-16 <xref target="UNICODE"/>), with no attempt at
+          normalization or case folding done anywhere in between.
         </t>
 
         <t>
@@ -664,6 +681,16 @@
     <references title="Normative References">
       <!--?rfc include="http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
       &RFC2119;
+      &RFC3629;
+      <reference anchor="UNICODE" target="https://www.unicode.org/versions/Unicode12.1.0/">
+        <front>
+          <title>The Unicode Standard, Version 12.1.0</title>
+          <author>
+            <organization>The Unicode Consortium</organization>
+          </author>
+          <date year="2019" month="May"/>
+        </front>
+      </reference>
     </references>
 
     <references title="Informative References">
@@ -672,6 +699,33 @@
       &RFC7230;
       &RFC7530;
       &SFTP;
+      <reference anchor="McKusick86">
+        <front>
+          <title>Towards a Compatible File System Interface</title>
+          <author fullname="Marshall McKusick" initials="M.K." surname="McKusik"/>
+          <author fullname="Michael Karels" initials="M.J." surname="Karels"/>
+          <date year="1986" month='Jun'/>
+        </front>
+      </reference>
+      <reference anchor="BSD4.4">
+        <front>
+          <title>The Design and Implementation of the 4.4BSD Operating System</title>
+          <author fullname="Marshall McKusick" initials="M.K." surname="McKusik"/>
+          <author fullname="Keith Bostic" initials="K." surname="Bostic"/>
+          <author fullname="Michael Karels" initials="M.J." surname="Karels"/>
+          <author fullname="John Quarterman" initials="J.S." surname="Quarterman"/>
+          <date year="1996"/>
+        </front>
+        <seriesInfo name= 'DOI' value= '10.5555/231070'/>
+      </reference>
+      <reference anchor="SolarisInternals">
+        <front>
+          <title>Solaris Internals -- Solaris 10 and OpenSolaris Kernel Architecture</title>
+          <author fullname="Richard" initials="R." surname="McDougal"/>
+          <author fullname="Jim" initials="J." surname="Mauro"/>
+          <date year="2007"/>
+        </front>
+      </reference>
     </references>
   </back>
 </rfc>
