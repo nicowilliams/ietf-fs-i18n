@@ -4,21 +4,21 @@
 
 Internet Engineering Task Force                         N. Williams, Ed.
 Internet-Draft                                         Cryptonector, LLC
-Intended status: Best Current Practice                      July 6, 2020
-Expires: January 7, 2021
+Intended status: Best Current Practice                      July 8, 2020
+Expires: January 9, 2021
 
 
    Internationalization Considerations for Filesystems and Filesystem
                                Protocols
-                    draft-williams-filesystem-18n-00
+                    draft-williams-filesystem-18n-01
 
 Abstract
 
-   This document describes requirements for internationalization (I18N)
-   of filesystems specifically in the context of Internet protocols, the
-   architecture for filesystems in most currently popular general
-   purpose operating systems, and their implications for filesystem
-   I18N.  From the I18N requirements for filesystems and the
+   This document describes the architecture for filesystem running code
+   in most currently popular general purpose operating systems, and the
+   implications of that architecture for filesystem internationalization
+   (I18N).  As well, we document requirements for internationalization
+   of filesystems.  From the I18N requirements for filesystems and the
    architecture of running code we derive requirements and
    recommendations for implementors of operating systems and/or
    filesystems, as well as for Internet remote filesystem protocols.
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 7, 2021.
+   This Internet-Draft will expire on January 9, 2021.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Williams                 Expires January 7, 2021                [Page 1]
+Williams                 Expires January 9, 2021                [Page 1]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
@@ -67,25 +67,26 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    1.1.  Requirements Language . . . . . . . . . . . . . . . . . . .   3
-   1.2.  Filesystem Internationalization . . . . . . . . . . . . . .   3
-   1.2.1.  Canonical Equivalence (Normalization) . . . . . . . . . .   4
-   1.2.2.  Case Foldings for Case-Insensitivity  . . . . . . . . . .   4
-   1.2.3.  Caching Clients . . . . . . . . . . . . . . . . . . . . .   5
-   1.3.  Running Code Architecture Notes . . . . . . . . . . . . . .   5
-   2.  Filesystem I18N Guidelines  . . . . . . . . . . . . . . . . .   9
-   2.1.  Filesystem I18N Guidelines: Non-Unicode File names  . . . .   9
-   2.2.  Filesystem I18N Guidelines: Case-Insensitivity  . . . . . .   9
-   2.3.  I18N Versioning . . . . . . . . . . . . . . . . . . . . . .   9
-   3.  Filesystem Protocol I18N Guidelines . . . . . . . . . . . . .  10
-   3.1.  I18N and Caching in Filesystem Protocol Clients . . . . . .  10
-   4.  Internationalization Considerations . . . . . . . . . . . . .  10
-   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  11
-   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
-   7.1.  Normative References  . . . . . . . . . . . . . . . . . . .  11
-   7.2.  Informative References  . . . . . . . . . . . . . . . . . .  12
-   7.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . . .  12
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  12
+   1.2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   1.3.  Filesystem Internationalization . . . . . . . . . . . . . .   3
+   1.3.1.  Canonical Equivalence (Normalization) . . . . . . . . . .   4
+   1.3.2.  Case Foldings for Case-Insensitivity  . . . . . . . . . .   5
+   1.3.3.  Caching Clients . . . . . . . . . . . . . . . . . . . . .   5
+   1.4.  Running Code Architecture Notes . . . . . . . . . . . . . .   6
+   2.  Filesystem I18N Guidelines  . . . . . . . . . . . . . . . . .  10
+   2.1.  Filesystem I18N Guidelines: Non-Unicode File names  . . . .  11
+   2.2.  Filesystem I18N Guidelines: Case-Insensitivity  . . . . . .  11
+   2.3.  I18N Versioning . . . . . . . . . . . . . . . . . . . . . .  11
+   3.  Filesystem Protocol I18N Guidelines . . . . . . . . . . . . .  11
+   3.1.  I18N and Caching in Filesystem Protocol Clients . . . . . .  12
+   4.  Internationalization Considerations . . . . . . . . . . . . .  12
+   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  12
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  13
+   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
+   7.1.  Normative References  . . . . . . . . . . . . . . . . . . .  13
+   7.2.  Informative References  . . . . . . . . . . . . . . . . . .  13
+   7.3.  URIs  . . . . . . . . . . . . . . . . . . . . . . . . . . .  14
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  14
 
 1.  Introduction
 
@@ -108,8 +109,7 @@ Table of Contents
 
 
 
-
-Williams                 Expires January 7, 2021                [Page 2]
+Williams                 Expires January 9, 2021                [Page 2]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
@@ -134,7 +134,18 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
-1.2.  Filesystem Internationalization
+1.2.  Glossary
+
+   I18N terminology in general use is not defined here, but we introduce
+   and define some informal terms:
+
+   o  "just-use-8" -- interfaces where arrays or lists of 8-bit code
+      units are passed without knowledge of the codeset/encoding in use.
+
+   o  "just-use-16" -- interfaces where arrays or lists of 16-bit code
+      units are passed without knowledge of the codeset/encoding in use.
+
+1.3.  Filesystem Internationalization
 
    We must address two issues:
 
@@ -150,31 +161,32 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    o  U+0061 U+0301
 
+
+
+
+
+Williams                 Expires January 9, 2021                [Page 3]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    For some glyphs there is a single way to write them.  For others
    there are two.  And for yet others there can be many more than two.
 
-   To deal with the equivalence problem, Unicode defines Normal Forms
-   (NFs), of which there are two basic ones: Normal Form Composed (NFC),
-   and Normal Form Decomposed (NFD).  There are also NFs that use
+   To deal with the equivalence problem, Unicode defines Normalization
+   Forms (NFs), of which there are two basic ones: Normal Form Composed
+   (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use
    "compatibility" Foldings, NFKC and NFKD.  Unicode-aware applications
    can normalize text to avoid ambiguities, or they can use form-
    insensitive string comparisons, or both.
 
    Some filesystems support case-insensitivity, which is trivial to
    define and implement for US-ASCII, but non-trivial for Unicode,
-
-
-
-Williams                 Expires January 7, 2021                [Page 3]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    requiring not only larger case-folding tables, but also localized
    case-folding tables as case-folding rules might differ from locale to
    locale.
 
-1.2.1.  Canonical Equivalence (Normalization)
+1.3.1.  Canonical Equivalence (Normalization)
 
    For case-sensitive filesystems, only Unicode equivalence issues arise
    as to file names and file paths.  These can be addressed in one of
@@ -199,32 +211,33 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    Unicode compatibility equivalence allows equivalence between
    different representations of the same abstract character that may
-   nonetheless have different visual appearance of behavior.  There are
-   two canonical forms that support compatibility equivalence: NFKC and
-   NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in a
-   visual way.  While form-insensitivity with NFKC or NFKD may surprise
-   users who might consider two file names distinct even when Unicode
-   considers them equivalent under compatibility equivalence.  The
-   latter seems less likely and less surprising, though that is an
+   nonetheless have different visual appearance or behavior.  There are
+   two normalization forms that support compatibility equivalence: NFKC
+   and NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in
+   a visual way.  While form-insensitivity with NFKC or NFKD may
+   surprise users who might consider two file names distinct even when
+   Unicode considers them equivalent under compatibility equivalence.
+
+
+
+
+Williams                 Expires January 9, 2021                [Page 4]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
+   The latter seems less likely and less surprising, though that is an
    entirely subjective judgement.
 
    We do not recommend either of NoCL or FIP over the other.
 
-1.2.2.  Case Foldings for Case-Insensitivity
+1.3.2.  Case Foldings for Case-Insensitivity
 
    Case-insensitivity implies folding characters of one case to another
    for comparison purposes, typically to lower-case.  These case
    foldings are defined by Unicode.  Generally, case-insensitive
-   filesystems preserve original case just form-insensitive filesystems
-   preserve original form.
-
-
-
-
-Williams                 Expires January 7, 2021                [Page 4]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
+   filesystems preserve original case just as form-insensitive
+   filesystems preserve original form.
 
    It is possible that some case foldings may have to vary by locale.  A
    commonly used example of character where case foldings that varies by
@@ -245,18 +258,31 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    which might satisfy a mix of users including those familiar with
    Turkish and those not, using the same filesystem.
 
-1.2.3.  Caching Clients
+1.3.3.  Caching Clients
 
    Remote filesystem protocols often involve caching on clients, which
    caching may require knowledge of filesystem I18N settings in order to
    permit local operations to be performed using cached directory
    listings that work the same way as on the server.  We do not specify
-   any case foldings here.  Instead we will either create a registry of
-   case folding tailorings, or use the Common Locale Data Repository
-   (CLDR), then require that filesystems and servers be able to identify
-   what case foldings are in effect for case-insensitive filesystems.
+   any case foldings in this document.  Instead we will either create a
+   registry of case folding tailorings, or use the Common Locale Data
+   Repository (CLDR), then require that filesystems and servers be able
+   to identify what case foldings are in effect for case-insensitive
+   filesystems.
 
-1.3.  Running Code Architecture Notes
+
+
+
+
+
+
+
+Williams                 Expires January 9, 2021                [Page 5]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
+1.4.  Running Code Architecture Notes
 
    Surprisingly, almost all if not all general purpose operating systems
    in common use today have a "virtual filesystem switch" (VFS)
@@ -274,14 +300,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    adoption.  It is not surprising then that in general -if not simply
    always today- the code path from the interface between a user
    application and the operating system all the way to the filesystem
-
-
-
-Williams                 Expires January 7, 2021                [Page 5]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    implements no I18N functionality whatsoever, and does the absolute
    minimum of character data interpretation:
 
@@ -301,8 +319,10 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    Thus in most if not all general purpose operating systems today, the
    code path from the boundary between the application and the operating
    system, and the boundary between the VFS and the filesystem, is
-   "just-use-8" or "just-use-16" (as in UTF-16 [UNICODE]), with no
-   attempt at normalization or case folding done anywhere in between.
+   "just-use-8" Section 1.2 or "just-use-16" Section 1.2, with no
+   attempt at any form of string preparation (normalization, application
+   of various mappings, case folding, transcoding) done anywhere in
+   between.
 
    There are filesystem servers that access raw storage directly and
    implement the filesystem and the remote filesystem protocol server in
@@ -310,6 +330,14 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    to have remote filesystem protocol servers implemented on top of the
    VFS or on top of the system calls.  Even monolythic servers tend to
    support a notion of multiple filesystems in a server or volume, and
+
+
+
+Williams                 Expires January 9, 2021                [Page 6]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    may have different I18N settings for each filesystem.  Thus it's
    common to leave I18N handling to code layers close to the filesystem
    even in monolythic server implementations.
@@ -330,14 +358,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    VFS at all: there are too many places to alter, and all must agree
    exactly on I18N choices.  Moreover, implementing case-insensitive but
    case-preserving behavior above the VFS requires fully reading each
-
-
-
-Williams                 Expires January 7, 2021                [Page 6]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    directory, and so does implementing form-insensitive and form-
    preserving behavior at the VFS layer itself.  The only behaviors that
    can be reliably implemented at or above the VFS are normalize- and
@@ -365,6 +385,15 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    o  WIN32 system call layers or user process system call stub
       libraries.
 
+
+
+
+
+Williams                 Expires January 9, 2021                [Page 7]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    Regarding system calls and system call stubs in user process system
    libraries, the continued use of statically-linked executables means
    that these cannot reliably be modified.  Indeed, on some systems the
@@ -385,14 +414,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    filesystems with one or more non-Unicode, non-ASCII codesets in use
    for file names!  We leave non-ASCII and non-Unicode file names out of
    scope here.
-
-
-
-
-Williams                 Expires January 7, 2021                [Page 7]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
 
    For these reasons it is simply not practical to implement I18N at any
    layer above the VFS.
@@ -421,6 +442,14 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    interoperably, and performantly implement I18N behaviors in general
    purpose operating systems.
 
+
+
+
+Williams                 Expires January 9, 2021                [Page 8]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    Note that variations in I18N behaviors can happen even on the same
    server with multiple filesystems of the same type.  This can happen
    because of
@@ -443,12 +472,78 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    directory listings, the client must know specifically what profile of
    I18N functionality each cached filesystem implements.
 
+   See Figure 1 for a diagram of the running code architecture on POSIX-
+   like systems.
 
 
-Williams                 Expires January 7, 2021                [Page 8]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Williams                 Expires January 9, 2021                [Page 9]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
+
+                                  +----------+
+                                  | NFS clnt |
+                                  +----------+
+                                        ^
+      +-----------------------+         |
+      | POSIX app process     |         |
+      |   (user-land)         |         |
+      |  -------------------- |         |
+      |  libc stubs           |         |
+      |        ^              |         |
+      |        |              |         |
+      |        v              |         |
+      +--------|--------------+---------|-----+
+      |        ^  (kernel-land)         |     |
+      |        |                        |     |
+      |        v                        v     |
+      | +--------------------+  +----------+  |
+      | |POSIX system calls  |  |NFS server|  |
+      | +--------------------+  +-------^--+  |
+      |        ^                        |     |
+      |        |                        |     |
+      |        v                        v     |
+      |  +--------------------------------+   |
+      |  |                VFS             |   |
+      |  | +-------------+                |   |
+      |  | |    VOP      |                |   |
+      |  | +-------------+                |   |
+      |  |           ^                    |   |
+      |  +-----------|--------------------+   |
+      |              |                        |
+      |  FS Modules  | (ZFS, UFS, extfs, ...) |
+      |              |                        |
+      |              v                        |
+      |       filesystem instance             |
+      +---------------------------------------+
+
+
+                Figure 1: Typical running code architecture
 
 2.  Filesystem I18N Guidelines
 
@@ -458,6 +553,14 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    this specification MUST implement only acceptable I18N behaviors as
    specified here.  Acceptable variations may be registered in a to-be-
    determined (IANA?) registry of filesystem I18N behaviors.
+
+
+
+
+Williams                 Expires January 9, 2021               [Page 10]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
 
 2.1.  Filesystem I18N Guidelines: Non-Unicode File names
 
@@ -494,18 +597,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    versions as they are produced, though it is understood that it may be
    difficult to migrate non-empty filesystems to new Unicode versions.
 
-
-
-
-
-
-
-
-Williams                 Expires January 7, 2021                [Page 9]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
 3.  Filesystem Protocol I18N Guidelines
 
    Remote filesystem protocols that allow clients to perform lookups
@@ -518,6 +609,14 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    o  whether the filesystem is form-insensitive and form-preserving,
       and if so, in what Unicode version;
+
+
+
+
+Williams                 Expires January 9, 2021               [Page 11]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
 
    o  whether the filesystem is case-insensitive and case-preserving,
       and if so, with what foldings (default or tailured, and if
@@ -554,14 +653,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    stability of CLDR locales...  Basically, we need stable locale names,
    and stable case-folding mappings.]
 
-
-
-
-Williams                 Expires January 7, 2021               [Page 10]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    We hereby request the creation of a new IANA registry with Expert
    Review registration rules with the following fields:
 
@@ -574,6 +665,15 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    The case foldings registered here will be used by case-insensitive
    filesystems and filesystem protocols to identify tailored case
+
+
+
+
+Williams                 Expires January 9, 2021               [Page 12]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    foldings so that caching clients can implement the same case-
    insensitive behavior using cached directory listings.
 
@@ -608,16 +708,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
               12.1.0", May 2019,
               <https://www.unicode.org/versions/Unicode12.1.0/>.
 
-
-
-
-
-
-Williams                 Expires January 7, 2021               [Page 11]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
 7.2.  Informative References
 
    [BSD4.4]   McKusik, M., Bostic, K., Karels, M., and J. Quarterman,
@@ -632,6 +722,13 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    [McKusick86]
               McKusik, M. and M. Karels, "Towards a Compatible File
               System Interface", Jun 1986.
+
+
+
+Williams                 Expires January 9, 2021               [Page 13]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
 
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66,
@@ -661,19 +758,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
 Author's Address
 
-
-
-
-
-
-
-
-
-Williams                 Expires January 7, 2021               [Page 12]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    Nico Williams (editor)
    Cryptonector, LLC
    Austin, TX
@@ -697,32 +781,4 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Williams                 Expires January 7, 2021               [Page 13]
+Williams                 Expires January 9, 2021               [Page 14]

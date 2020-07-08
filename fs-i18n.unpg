@@ -4,21 +4,21 @@
 
 Internet Engineering Task Force                         N. Williams, Ed.
 Internet-Draft                                         Cryptonector, LLC
-Intended status: Best Current Practice                      July 6, 2020
-Expires: January 7, 2021
+Intended status: Best Current Practice                      July 8, 2020
+Expires: January 9, 2021
 
 
    Internationalization Considerations for Filesystems and Filesystem
                                Protocols
-                    draft-williams-filesystem-18n-00
+                    draft-williams-filesystem-18n-01
 
 Abstract
 
-   This document describes requirements for internationalization (I18N)
-   of filesystems specifically in the context of Internet protocols, the
-   architecture for filesystems in most currently popular general
-   purpose operating systems, and their implications for filesystem
-   I18N.  From the I18N requirements for filesystems and the
+   This document describes the architecture for filesystem running code
+   in most currently popular general purpose operating systems, and the
+   implications of that architecture for filesystem internationalization
+   (I18N).  As well, we document requirements for internationalization
+   of filesystems.  From the I18N requirements for filesystems and the
    architecture of running code we derive requirements and
    recommendations for implementors of operating systems and/or
    filesystems, as well as for Internet remote filesystem protocols.
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 7, 2021.
+   This Internet-Draft will expire on January 9, 2021.
 
 Copyright Notice
 
@@ -59,11 +59,12 @@ Table of Contents
 
    1.  Introduction
    1.1.  Requirements Language
-   1.2.  Filesystem Internationalization
-   1.2.1.  Canonical Equivalence (Normalization)
-   1.2.2.  Case Foldings for Case-Insensitivity
-   1.2.3.  Caching Clients
-   1.3.  Running Code Architecture Notes
+   1.2.  Glossary
+   1.3.  Filesystem Internationalization
+   1.3.1.  Canonical Equivalence (Normalization)
+   1.3.2.  Case Foldings for Case-Insensitivity
+   1.3.3.  Caching Clients
+   1.4.  Running Code Architecture Notes
    2.  Filesystem I18N Guidelines
    2.1.  Filesystem I18N Guidelines: Non-Unicode File names
    2.2.  Filesystem I18N Guidelines: Case-Insensitivity
@@ -118,7 +119,18 @@ Table of Contents
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
-1.2.  Filesystem Internationalization
+1.2.  Glossary
+
+   I18N terminology in general use is not defined here, but we introduce
+   and define some informal terms:
+
+   o  "just-use-8" -- interfaces where arrays or lists of 8-bit code
+      units are passed without knowledge of the codeset/encoding in use.
+
+   o  "just-use-16" -- interfaces where arrays or lists of 16-bit code
+      units are passed without knowledge of the codeset/encoding in use.
+
+1.3.  Filesystem Internationalization
 
    We must address two issues:
 
@@ -137,9 +149,9 @@ Table of Contents
    For some glyphs there is a single way to write them.  For others
    there are two.  And for yet others there can be many more than two.
 
-   To deal with the equivalence problem, Unicode defines Normal Forms
-   (NFs), of which there are two basic ones: Normal Form Composed (NFC),
-   and Normal Form Decomposed (NFD).  There are also NFs that use
+   To deal with the equivalence problem, Unicode defines Normalization
+   Forms (NFs), of which there are two basic ones: Normal Form Composed
+   (NFC), and Normal Form Decomposed (NFD).  There are also NFs that use
    "compatibility" Foldings, NFKC and NFKD.  Unicode-aware applications
    can normalize text to avoid ambiguities, or they can use form-
    insensitive string comparisons, or both.
@@ -150,7 +162,7 @@ Table of Contents
    case-folding tables as case-folding rules might differ from locale to
    locale.
 
-1.2.1.  Canonical Equivalence (Normalization)
+1.3.1.  Canonical Equivalence (Normalization)
 
    For case-sensitive filesystems, only Unicode equivalence issues arise
    as to file names and file paths.  These can be addressed in one of
@@ -175,24 +187,24 @@ Table of Contents
 
    Unicode compatibility equivalence allows equivalence between
    different representations of the same abstract character that may
-   nonetheless have different visual appearance of behavior.  There are
-   two canonical forms that support compatibility equivalence: NFKC and
-   NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in a
-   visual way.  While form-insensitivity with NFKC or NFKD may surprise
-   users who might consider two file names distinct even when Unicode
-   considers them equivalent under compatibility equivalence.  The
-   latter seems less likely and less surprising, though that is an
+   nonetheless have different visual appearance or behavior.  There are
+   two normalization forms that support compatibility equivalence: NFKC
+   and NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in
+   a visual way.  While form-insensitivity with NFKC or NFKD may
+   surprise users who might consider two file names distinct even when
+   Unicode considers them equivalent under compatibility equivalence.
+   The latter seems less likely and less surprising, though that is an
    entirely subjective judgement.
 
    We do not recommend either of NoCL or FIP over the other.
 
-1.2.2.  Case Foldings for Case-Insensitivity
+1.3.2.  Case Foldings for Case-Insensitivity
 
    Case-insensitivity implies folding characters of one case to another
    for comparison purposes, typically to lower-case.  These case
    foldings are defined by Unicode.  Generally, case-insensitive
-   filesystems preserve original case just form-insensitive filesystems
-   preserve original form.
+   filesystems preserve original case just as form-insensitive
+   filesystems preserve original form.
 
    It is possible that some case foldings may have to vary by locale.  A
    commonly used example of character where case foldings that varies by
@@ -213,18 +225,19 @@ Table of Contents
    which might satisfy a mix of users including those familiar with
    Turkish and those not, using the same filesystem.
 
-1.2.3.  Caching Clients
+1.3.3.  Caching Clients
 
    Remote filesystem protocols often involve caching on clients, which
    caching may require knowledge of filesystem I18N settings in order to
    permit local operations to be performed using cached directory
    listings that work the same way as on the server.  We do not specify
-   any case foldings here.  Instead we will either create a registry of
-   case folding tailorings, or use the Common Locale Data Repository
-   (CLDR), then require that filesystems and servers be able to identify
-   what case foldings are in effect for case-insensitive filesystems.
+   any case foldings in this document.  Instead we will either create a
+   registry of case folding tailorings, or use the Common Locale Data
+   Repository (CLDR), then require that filesystems and servers be able
+   to identify what case foldings are in effect for case-insensitive
+   filesystems.
 
-1.3.  Running Code Architecture Notes
+1.4.  Running Code Architecture Notes
 
    Surprisingly, almost all if not all general purpose operating systems
    in common use today have a "virtual filesystem switch" (VFS)
@@ -261,8 +274,10 @@ Table of Contents
    Thus in most if not all general purpose operating systems today, the
    code path from the boundary between the application and the operating
    system, and the boundary between the VFS and the filesystem, is
-   "just-use-8" or "just-use-16" (as in UTF-16 [UNICODE]), with no
-   attempt at normalization or case folding done anywhere in between.
+   "just-use-8" Section 1.2 or "just-use-16" Section 1.2, with no
+   attempt at any form of string preparation (normalization, application
+   of various mappings, case folding, transcoding) done anywhere in
+   between.
 
    There are filesystem servers that access raw storage directly and
    implement the filesystem and the remote filesystem protocol server in
@@ -386,6 +401,49 @@ Table of Contents
    know what I18N functionality to implement for use with cached
    directory listings, the client must know specifically what profile of
    I18N functionality each cached filesystem implements.
+
+   See Figure 1 for a diagram of the running code architecture on POSIX-
+   like systems.
+
+
+                                  +----------+
+                                  | NFS clnt |
+                                  +----------+
+                                        ^
+      +-----------------------+         |
+      | POSIX app process     |         |
+      |   (user-land)         |         |
+      |  -------------------- |         |
+      |  libc stubs           |         |
+      |        ^              |         |
+      |        |              |         |
+      |        v              |         |
+      +--------|--------------+---------|-----+
+      |        ^  (kernel-land)         |     |
+      |        |                        |     |
+      |        v                        v     |
+      | +--------------------+  +----------+  |
+      | |POSIX system calls  |  |NFS server|  |
+      | +--------------------+  +-------^--+  |
+      |        ^                        |     |
+      |        |                        |     |
+      |        v                        v     |
+      |  +--------------------------------+   |
+      |  |                VFS             |   |
+      |  | +-------------+                |   |
+      |  | |    VOP      |                |   |
+      |  | +-------------+                |   |
+      |  |           ^                    |   |
+      |  +-----------|--------------------+   |
+      |              |                        |
+      |  FS Modules  | (ZFS, UFS, extfs, ...) |
+      |              |                        |
+      |              v                        |
+      |       filesystem instance             |
+      +---------------------------------------+
+
+
+                Figure 1: Typical running code architecture
 
 2.  Filesystem I18N Guidelines
 

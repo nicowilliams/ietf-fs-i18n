@@ -20,7 +20,7 @@
 <?rfc inline="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="bcp" docName="draft-williams-filesystem-18n-00" ipr="trust200902">
+<rfc category="bcp" docName="draft-williams-filesystem-18n-01" ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN" 
@@ -64,15 +64,15 @@
 
     <abstract>
       <t>
-        This document describes requirements for internationalization
-        (I18N) of filesystems specifically in the context of Internet
-        protocols, the architecture for filesystems in most currently
-        popular general purpose operating systems, and their
-        implications for filesystem I18N.  From the I18N requirements
-        for filesystems and the architecture of running code we derive
-        requirements and recommendations for implementors of operating
-        systems and/or filesystems, as well as for Internet remote
-        filesystem protocols.
+        This document describes the architecture for filesystem running
+        code in most currently popular general purpose operating
+        systems, and the implications of that architecture for
+        filesystem internationalization (I18N).  As well, we document
+        requirements for internationalization of filesystems.  From the
+        I18N requirements for filesystems and the architecture of
+        running code we derive requirements and recommendations for
+        implementors of operating systems and/or filesystems, as well as
+        for Internet remote filesystem protocols.
       </t>
     </abstract>
 
@@ -131,6 +131,26 @@
         </t>
       </section>
 
+      <section anchor="glossary" title="Glossary">
+        <t>
+          I18N terminology in general use is not defined here, but we
+          introduce and define some informal terms:
+
+          <list style='symbols'>
+            <t>
+              "just-use-8" -- interfaces where arrays or lists of 8-bit
+              code units are passed without knowledge of the
+              codeset/encoding in use.
+            </t>
+            <t>
+              "just-use-16" -- interfaces where arrays or lists of 16-bit
+              code units are passed without knowledge of the
+              codeset/encoding in use.
+            </t>
+          </list>
+        </t>
+      </section>
+
       <section anchor="intro_fs_i18n" title="Filesystem Internationalization">
         <t>
           We must address two issues:
@@ -158,11 +178,11 @@
         </t>
 
         <t>
-          To deal with the equivalence problem, Unicode defines Normal
-          Forms (NFs), of which there are two basic ones: Normal Form
-          Composed (NFC), and Normal Form Decomposed (NFD).  There are
-          also NFs that use "compatibility" Foldings, NFKC and NFKD.
-          Unicode-aware applications can normalize text to avoid
+          To deal with the equivalence problem, Unicode defines
+          Normalization Forms (NFs), of which there are two basic ones:
+          Normal Form Composed (NFC), and Normal Form Decomposed (NFD).
+          There are also NFs that use "compatibility" Foldings, NFKC and
+          NFKD.  Unicode-aware applications can normalize text to avoid
           ambiguities, or they can use form-insensitive string
           comparisons, or both.
         </t>
@@ -207,8 +227,8 @@
           <t>
             Unicode compatibility equivalence allows equivalence between
             different representations of the same abstract character
-            that may nonetheless have different visual appearance of
-            behavior.  There are two canonical forms that support
+            that may nonetheless have different visual appearance or
+            behavior.  There are two normalization forms that support
             compatibility equivalence: NFKC and NFKD.  Using NoCL with
             NFKC or NFKD may be surprising to users in a visual way.
             While form-insensitivity with NFKC or NFKD may surprise
@@ -229,7 +249,7 @@
             another for comparison purposes, typically to lower-case.
             These case foldings are defined by Unicode.  Generally,
             case-insensitive filesystems preserve original case just
-            form-insensitive filesystems preserve original form.
+            as form-insensitive filesystems preserve original form.
           </t>
 
           <t>
@@ -261,10 +281,10 @@
             I18N settings in order to permit local operations to be
             performed using cached directory listings that work the same
             way as on the server.  We do not specify any case foldings
-            here.  Instead we will either create a registry of case
-            folding tailorings, or use the Common Locale Data Repository
-            (CLDR), then require that filesystems and servers be able to
-            identify what case foldings are in effect for
+            in this document.  Instead we will either create a registry
+            of case folding tailorings, or use the Common Locale Data
+            Repository (CLDR), then require that filesystems and servers
+            be able to identify what case foldings are in effect for
             case-insensitive filesystems.
           </t>
         </section>
@@ -318,9 +338,11 @@
           Thus in most if not all general purpose operating systems
           today, the code path from the boundary between the application
           and the operating system, and the boundary between the VFS and
-          the filesystem, is "just-use-8" or "just-use-16" (as in
-          UTF-16 <xref target="UNICODE"/>), with no attempt at
-          normalization or case folding done anywhere in between.
+          the filesystem, is "just-use-8" <xref target="glossary"/> or
+          "just-use-16" <xref target="glossary"/>, with no attempt at
+          any form of string preparation (normalization, application of
+          various mappings, case folding, transcoding) done anywhere in
+          between.
         </t>
 
         <t>
@@ -490,6 +512,53 @@
           must know specifically what profile of I18N functionality each
           cached filesystem implements.
         </t>
+
+        <t>
+          See <xref target="fsarchart"/> for a diagram of the running
+          code architecture on POSIX-like systems.
+        </t>
+
+        <figure anchor="fsarchart" title="Typical running code architecture">
+          <artwork>
+            <![CDATA[
+                             +------------+
+                             | NFSv4 clnt |
+                             +------------+
+                                     ^
+   +-----------------------+         |
+   | POSIX app process     |         |
+   |   (user-land)         |         |
+   |-----------------------|         |
+   |  libc stubs           |         |
+   |        ^              |         |
+   |        |              |         |
+   |        v              |         |
+   +--------|--------------+---------|-----+
+   |        ^  (kernel-land)         |     |
+   |        |                        |     |
+   |        v                        v     |
+   | +--------------------+ +------------+ |
+   | |POSIX system calls  | |NFSv4 server| |
+   | +--------------------+ +--------^---+ |
+   |        ^                        |     |
+   |        |                        |     |
+   |        v                        v     |
+   |  +--------------------------------+   |
+   |  |                VFS             |   |
+   |  | +-------------+                |   |
+   |  | |    VOP      |                |   |
+   |  | +-------------+                |   |
+   |  |           ^                    |   |
+   |  +-----------|--------------------+   |
+   |              |                        |
+   |  FS Modules  | (ZFS, UFS, extfs, ...) |
+   |              |                        |
+   |              v                        |
+   |       filesystem instance             |
+   +---------------------------------------+
+            ]]>
+          </artwork>
+        </figure>
       </section>
     </section>
 
