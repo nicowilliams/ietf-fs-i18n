@@ -62,8 +62,9 @@ Table of Contents
    1.2.  Glossary
    1.3.  Filesystem Internationalization
    1.3.1.  Canonical Equivalence (Normalization)
-   1.3.2.  Case Foldings for Case-Insensitivity
-   1.3.3.  Caching Clients
+   1.3.2.  Other Visual Equivalence Mappings
+   1.3.3.  Case Foldings for Case-Insensitivity
+   1.3.4.  Caching Clients
    1.4.  Running Code Architecture Notes
    2.  Filesystem I18N Guidelines
    2.1.  Filesystem I18N Guidelines: Non-Unicode File names
@@ -82,24 +83,28 @@ Table of Contents
 
 1.  Introduction
 
-   [TBD: Add references galore.  How to reference Unicode?  How to
-   reference US-ASCII?  How best to reference HFS+?  How best to
-   reference ZFS?  May have to find useful references for POSIX and
+   [TBD: Add references galore.  How best to reference HFS+?  How best
+   to reference ZFS?  May have to find useful references for POSIX and
    WIN32.  Various blog entries may be of interest -- can they be
    referenced?]
 
    We, the Internet community, have long concluded that we must
    internationalize all our protocols.  This is generally not an easy
    task, as often we are constrained by the realities of what can be
-   achieved while maintaining backwards compatibility.
+   achieved while maintaining backwards compatibility.  We start by
+   making use of Unicode [UNICODE], then we specify how to deal with
+   various problems that arise.
 
    In this document we focus on filesystem internationalization (I18N),
    specifically only for file names and file paths.  Here we address the
    two main issues that arise in filesystem I18N:
 
-   o  Unicode equivalence
+   o  Unicode equivalence;
 
-   o  Case foldings for case-insensitivity
+   o  Additional visual equivalence mappings that may be needed above
+      and beyond those provided for by Unicode Normalization Forms;
+
+   o  Case foldings for case-insensitivity.
 
    These two issues are different flavors of the same generic issue:
    that there can be more than one way to write text with the same
@@ -198,7 +203,20 @@ Table of Contents
 
    We do not recommend either of NoCL or FIP over the other.
 
-1.3.2.  Case Foldings for Case-Insensitivity
+1.3.2.  Other Visual Equivalence Mappings
+
+   Besides the normalization forms, certain characters have visual
+   equivalents that are not normally considered equivalent under
+   normalization, but which may need to be considered equivalent in
+   limited contexts, such as naming identifiers (e.g., file names).  For
+   example, NON-BREAKING HYPHEN (U+2011) looks indistinguishable from
+   HYPHEN-MINUS (U+002D).  Normally, users are unlikely to type a NON-
+   BREAKING HYPHEN as they type file names, but when pasting copied text
+   as file names, a non-breaking hyphen may sneak in.  Besides this
+   example, there are a variety of other sets of visually-equivalent and
+   visually-confusable characters that may (or may not) need mapping.
+
+1.3.3.  Case Foldings for Case-Insensitivity
 
    Case-insensitivity implies folding characters of one case to another
    for comparison purposes, typically to lower-case.  These case
@@ -211,7 +229,7 @@ Table of Contents
    locale is LATIN SMALL LETTER DOTLESS I (U+0131).
 
    In some cases it may be possible to construct case-folding tailorings
-   that are locale-neutral.  For example, all of the following conuld be
+   that are locale-neutral.  For example, all of the following could be
    considered equivalent:
 
    o  LATIN CAPITAL LETTER I (U+0049)
@@ -223,9 +241,13 @@ Table of Contents
    o  LATIN SMALL LETTER DOTLESS I (U+0131)
 
    which might satisfy a mix of users including those familiar with
-   Turkish and those not, using the same filesystem.
+   Turkish and those not, using the same filesystem.  Of course, it is
+   also possible that considering these four to be equivalent for case-
+   insensitivity will surprise and anger users, in which case a site
+   might need separate filesystems for Turkish or Azerbaijani content
+   and non-Turkish, non-Azerbaijani content.
 
-1.3.3.  Caching Clients
+1.3.4.  Caching Clients
 
    Remote filesystem protocols often involve caching on clients, which
    caching may require knowledge of filesystem I18N settings in order to
@@ -264,12 +286,14 @@ Table of Contents
       delimiting).
 
    For example, the 4.4BSD operating system and derivatives have a VFS
-   [BSD4.4], as do Solaris and derivatives [SolarisInternals], Windows
-   <https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/>, OS
-   X, and Linux.  A VFS of a sort, including FUSE, may well be the only
-   reasonable way to support more than one kind of filesystem while
-   retaining compatibility with previously-existing filesystem APIs.
-   This explains why so many modern operating systems have a VFS.
+   [BSD4.4], section 6.5, page 218, as do Solaris and derivatives
+   [SolarisInternals], section 14.5, page 675, Unix systems in general
+   [UnixInternals], section 8.6, page 234 [LinuxKernelDev], chapter 13,
+   page 261, Windows <https://docs.microsoft.com/en-us/windows-
+   hardware/drivers/ifs/>, OS X, and Linux.  A VFS of a sort may well be
+   the only reasonable way to support more than one kind of filesystem
+   while retaining compatibility with previously-existing filesystem
+   APIs.  This explains why so many modern operating systems have a VFS.
 
    Thus in most if not all general purpose operating systems today, the
    code path from the boundary between the application and the operating
@@ -406,14 +430,14 @@ Table of Contents
    like systems.
 
 
-                                  +----------+
-                                  | NFS clnt |
-                                  +----------+
+                                +------------+
+                                | NFSv4 clnt |
+                                +------------+
                                         ^
       +-----------------------+         |
       | POSIX app process     |         |
       |   (user-land)         |         |
-      |  -------------------- |         |
+      |-----------------------|         |
       |  libc stubs           |         |
       |        ^              |         |
       |        |              |         |
@@ -422,9 +446,9 @@ Table of Contents
       |        ^  (kernel-land)         |     |
       |        |                        |     |
       |        v                        v     |
-      | +--------------------+  +----------+  |
-      | |POSIX system calls  |  |NFS server|  |
-      | +--------------------+  +-------^--+  |
+      | +--------------------+ +------------+ |
+      | |POSIX system calls  | |NFSv4 server| |
+      | +--------------------+ +--------^---+ |
       |        ^                        |     |
       |        |                        |     |
       |        v                        v     |
@@ -490,6 +514,10 @@ Table of Contents
    difficult to migrate non-empty filesystems to new Unicode versions.
 
 3.  Filesystem Protocol I18N Guidelines
+
+   Remote filesystem protocols MUST specify a UTF (typically UTF-8
+   [RFC3629]) and must reject invalid code unit sequences for that UTF
+   [UNICODE].
 
    Remote filesystem protocols that allow clients to perform lookups
    against cached directory listings MUST allow clients to discover all
@@ -594,6 +622,9 @@ Table of Contents
               Protocol", draft-ietf-secsh-filexfer-13 (work in
               progress), July 2006.
 
+   [LinuxKernelDev]
+              Love, R., "Linux Kernel Development, Third Edition", 2010.
+
    [McKusick86]
               McKusik, M. and M. Karels, "Towards a Compatible File
               System Interface", Jun 1986.
@@ -619,6 +650,9 @@ Table of Contents
    [SolarisInternals]
               McDougal, R. and J. Mauro, "Solaris Internals -- Solaris
               10 and OpenSolaris Kernel Architecture", 2007.
+
+   [UnixInternals]
+              Vahalia, U., "Unix Internals -- The New Frontier", 1996.
 
 7.3.  URIs
 

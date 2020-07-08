@@ -70,8 +70,9 @@ Table of Contents
    1.2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . .   3
    1.3.  Filesystem Internationalization . . . . . . . . . . . . . .   3
    1.3.1.  Canonical Equivalence (Normalization) . . . . . . . . . .   4
-   1.3.2.  Case Foldings for Case-Insensitivity  . . . . . . . . . .   5
-   1.3.3.  Caching Clients . . . . . . . . . . . . . . . . . . . . .   5
+   1.3.2.  Other Visual Equivalence Mappings . . . . . . . . . . . .   5
+   1.3.3.  Case Foldings for Case-Insensitivity  . . . . . . . . . .   5
+   1.3.4.  Caching Clients . . . . . . . . . . . . . . . . . . . . .   6
    1.4.  Running Code Architecture Notes . . . . . . . . . . . . . .   6
    2.  Filesystem I18N Guidelines  . . . . . . . . . . . . . . . . .  10
    2.1.  Filesystem I18N Guidelines: Non-Unicode File names  . . . .  11
@@ -90,22 +91,21 @@ Table of Contents
 
 1.  Introduction
 
-   [TBD: Add references galore.  How to reference Unicode?  How to
-   reference US-ASCII?  How best to reference HFS+?  How best to
-   reference ZFS?  May have to find useful references for POSIX and
+   [TBD: Add references galore.  How best to reference HFS+?  How best
+   to reference ZFS?  May have to find useful references for POSIX and
    WIN32.  Various blog entries may be of interest -- can they be
    referenced?]
 
    We, the Internet community, have long concluded that we must
    internationalize all our protocols.  This is generally not an easy
    task, as often we are constrained by the realities of what can be
-   achieved while maintaining backwards compatibility.
+   achieved while maintaining backwards compatibility.  We start by
+   making use of Unicode [UNICODE], then we specify how to deal with
+   various problems that arise.
 
    In this document we focus on filesystem internationalization (I18N),
    specifically only for file names and file paths.  Here we address the
    two main issues that arise in filesystem I18N:
-
-   o  Unicode equivalence
 
 
 
@@ -114,7 +114,12 @@ Williams                 Expires January 9, 2021                [Page 2]
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
-   o  Case foldings for case-insensitivity
+   o  Unicode equivalence;
+
+   o  Additional visual equivalence mappings that may be needed above
+      and beyond those provided for by Unicode Normalization Forms;
+
+   o  Case foldings for case-insensitivity.
 
    These two issues are different flavors of the same generic issue:
    that there can be more than one way to write text with the same
@@ -157,11 +162,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    and semantically-equivalent ways.  For example, there are two ways to
    express LATIN SMALL LETTER A WITH ACUTE (á):
 
-   o  U+00E1
-
-   o  U+0061 U+0301
-
-
 
 
 
@@ -169,6 +169,10 @@ Williams                 Expires January 9, 2021                [Page 3]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
+
+   o  U+00E1
+
+   o  U+0061 U+0301
 
    For some glyphs there is a single way to write them.  For others
    there are two.  And for yet others there can be many more than two.
@@ -214,10 +218,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    nonetheless have different visual appearance or behavior.  There are
    two normalization forms that support compatibility equivalence: NFKC
    and NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in
-   a visual way.  While form-insensitivity with NFKC or NFKD may
-   surprise users who might consider two file names distinct even when
-   Unicode considers them equivalent under compatibility equivalence.
-
 
 
 
@@ -226,12 +226,28 @@ Williams                 Expires January 9, 2021                [Page 4]
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
+   a visual way.  While form-insensitivity with NFKC or NFKD may
+   surprise users who might consider two file names distinct even when
+   Unicode considers them equivalent under compatibility equivalence.
    The latter seems less likely and less surprising, though that is an
    entirely subjective judgement.
 
    We do not recommend either of NoCL or FIP over the other.
 
-1.3.2.  Case Foldings for Case-Insensitivity
+1.3.2.  Other Visual Equivalence Mappings
+
+   Besides the normalization forms, certain characters have visual
+   equivalents that are not normally considered equivalent under
+   normalization, but which may need to be considered equivalent in
+   limited contexts, such as naming identifiers (e.g., file names).  For
+   example, NON-BREAKING HYPHEN (U+2011) looks indistinguishable from
+   HYPHEN-MINUS (U+002D).  Normally, users are unlikely to type a NON-
+   BREAKING HYPHEN as they type file names, but when pasting copied text
+   as file names, a non-breaking hyphen may sneak in.  Besides this
+   example, there are a variety of other sets of visually-equivalent and
+   visually-confusable characters that may (or may not) need mapping.
+
+1.3.3.  Case Foldings for Case-Insensitivity
 
    Case-insensitivity implies folding characters of one case to another
    for comparison purposes, typically to lower-case.  These case
@@ -244,7 +260,7 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    locale is LATIN SMALL LETTER DOTLESS I (U+0131).
 
    In some cases it may be possible to construct case-folding tailorings
-   that are locale-neutral.  For example, all of the following conuld be
+   that are locale-neutral.  For example, all of the following could be
    considered equivalent:
 
    o  LATIN CAPITAL LETTER I (U+0049)
@@ -256,9 +272,21 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    o  LATIN SMALL LETTER DOTLESS I (U+0131)
 
    which might satisfy a mix of users including those familiar with
-   Turkish and those not, using the same filesystem.
+   Turkish and those not, using the same filesystem.  Of course, it is
+   also possible that considering these four to be equivalent for case-
 
-1.3.3.  Caching Clients
+
+
+Williams                 Expires January 9, 2021                [Page 5]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
+   insensitivity will surprise and anger users, in which case a site
+   might need separate filesystems for Turkish or Azerbaijani content
+   and non-Turkish, non-Azerbaijani content.
+
+1.3.4.  Caching Clients
 
    Remote filesystem protocols often involve caching on clients, which
    caching may require knowledge of filesystem I18N settings in order to
@@ -269,18 +297,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    Repository (CLDR), then require that filesystems and servers be able
    to identify what case foldings are in effect for case-insensitive
    filesystems.
-
-
-
-
-
-
-
-
-Williams                 Expires January 9, 2021                [Page 5]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
 
 1.4.  Running Code Architecture Notes
 
@@ -309,12 +325,22 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
       delimiting).
 
    For example, the 4.4BSD operating system and derivatives have a VFS
-   [BSD4.4], as do Solaris and derivatives [SolarisInternals], Windows
-   <https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/>, OS
-   X, and Linux.  A VFS of a sort, including FUSE, may well be the only
-   reasonable way to support more than one kind of filesystem while
-   retaining compatibility with previously-existing filesystem APIs.
-   This explains why so many modern operating systems have a VFS.
+   [BSD4.4], section 6.5, page 218, as do Solaris and derivatives
+   [SolarisInternals], section 14.5, page 675, Unix systems in general
+   [UnixInternals], section 8.6, page 234 [LinuxKernelDev], chapter 13,
+   page 261, Windows <https://docs.microsoft.com/en-us/windows-
+   hardware/drivers/ifs/>, OS X, and Linux.  A VFS of a sort may well be
+
+
+
+Williams                 Expires January 9, 2021                [Page 6]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
+   the only reasonable way to support more than one kind of filesystem
+   while retaining compatibility with previously-existing filesystem
+   APIs.  This explains why so many modern operating systems have a VFS.
 
    Thus in most if not all general purpose operating systems today, the
    code path from the boundary between the application and the operating
@@ -330,14 +356,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    to have remote filesystem protocol servers implemented on top of the
    VFS or on top of the system calls.  Even monolythic servers tend to
    support a notion of multiple filesystems in a server or volume, and
-
-
-
-Williams                 Expires January 9, 2021                [Page 6]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
-
    may have different I18N settings for each filesystem.  Thus it's
    common to leave I18N handling to code layers close to the filesystem
    even in monolythic server implementations.
@@ -369,6 +387,13 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    o  filesystem protocol servers, including but not limited to:
 
+
+
+Williams                 Expires January 9, 2021                [Page 7]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
       *  Network File System (NFSv4) [RFC7530];
 
       *  Hypertext Transfer Protocol (HTTP) servers serving resources
@@ -384,15 +409,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
    o  WIN32 system call layers or user process system call stub
       libraries.
-
-
-
-
-
-Williams                 Expires January 9, 2021                [Page 7]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
 
    Regarding system calls and system call stubs in user process system
    libraries, the continued use of statically-linked executables means
@@ -426,6 +442,14 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    offline operation), but it isn't reasonable to expect the same of the
    VFS.  Compare to the filesystem itself, which can maintain a fast
    index (e.g., hash table or b-tree) where the keys are normalized and
+
+
+
+Williams                 Expires January 9, 2021                [Page 8]
+
+Internet-Draft           Accept-Auth & Redirect                July 2020
+
+
    possibly case-folded file names and thus may not need to read
    directories in order to perform fast lookups that are form- and even
    case-insensitive.
@@ -441,14 +465,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    Therefore, generally speaking, only the filesystem can reliably,
    interoperably, and performantly implement I18N behaviors in general
    purpose operating systems.
-
-
-
-
-Williams                 Expires January 9, 2021                [Page 8]
-
-Internet-Draft           Accept-Auth & Redirect                July 2020
-
 
    Note that variations in I18N behaviors can happen even on the same
    server with multiple filesystems of the same type.  This can happen
@@ -485,35 +501,19 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Williams                 Expires January 9, 2021                [Page 9]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
-                                  +----------+
-                                  | NFS clnt |
-                                  +----------+
+                                +------------+
+                                | NFSv4 clnt |
+                                +------------+
                                         ^
       +-----------------------+         |
       | POSIX app process     |         |
       |   (user-land)         |         |
-      |  -------------------- |         |
+      |-----------------------|         |
       |  libc stubs           |         |
       |        ^              |         |
       |        |              |         |
@@ -522,9 +522,9 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
       |        ^  (kernel-land)         |     |
       |        |                        |     |
       |        v                        v     |
-      | +--------------------+  +----------+  |
-      | |POSIX system calls  |  |NFS server|  |
-      | +--------------------+  +-------^--+  |
+      | +--------------------+ +------------+ |
+      | |POSIX system calls  | |NFSv4 server| |
+      | +--------------------+ +--------^---+ |
       |        ^                        |     |
       |        |                        |     |
       |        v                        v     |
@@ -599,6 +599,10 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
 
 3.  Filesystem Protocol I18N Guidelines
 
+   Remote filesystem protocols MUST specify a UTF (typically UTF-8
+   [RFC3629]) and must reject invalid code unit sequences for that UTF
+   [UNICODE].
+
    Remote filesystem protocols that allow clients to perform lookups
    against cached directory listings MUST allow clients to discover all
    relevant I18N behaviors of the filesystem whence any given directory
@@ -607,16 +611,15 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    o  whether the filesystem normalizes on CREATE (and LOOKUP), and if
       so, to what NF in what Unicode version;
 
-   o  whether the filesystem is form-insensitive and form-preserving,
-      and if so, in what Unicode version;
-
-
 
 
 Williams                 Expires January 9, 2021               [Page 11]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
+
+   o  whether the filesystem is form-insensitive and form-preserving,
+      and if so, in what Unicode version;
 
    o  whether the filesystem is case-insensitive and case-preserving,
       and if so, with what foldings (default or tailured, and if
@@ -663,9 +666,6 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
    o  listing of case folding tailorings and/or references to external
       case folding tailoring specifications
 
-   The case foldings registered here will be used by case-insensitive
-   filesystems and filesystem protocols to identify tailored case
-
 
 
 
@@ -674,6 +674,8 @@ Williams                 Expires January 9, 2021               [Page 12]
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
 
+   The case foldings registered here will be used by case-insensitive
+   filesystems and filesystem protocols to identify tailored case
    foldings so that caching clients can implement the same case-
    insensitive behavior using cached directory listings.
 
@@ -719,9 +721,7 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
               Protocol", draft-ietf-secsh-filexfer-13 (work in
               progress), July 2006.
 
-   [McKusick86]
-              McKusik, M. and M. Karels, "Towards a Compatible File
-              System Interface", Jun 1986.
+
 
 
 
@@ -729,6 +729,13 @@ Williams                 Expires January 9, 2021               [Page 13]
 
 Internet-Draft           Accept-Auth & Redirect                July 2020
 
+
+   [LinuxKernelDev]
+              Love, R., "Linux Kernel Development, Third Edition", 2010.
+
+   [McKusick86]
+              McKusik, M. and M. Karels, "Towards a Compatible File
+              System Interface", Jun 1986.
 
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66,
@@ -752,6 +759,9 @@ Internet-Draft           Accept-Auth & Redirect                July 2020
               McDougal, R. and J. Mauro, "Solaris Internals -- Solaris
               10 and OpenSolaris Kernel Architecture", 2007.
 
+   [UnixInternals]
+              Vahalia, U., "Unix Internals -- The New Frontier", 1996.
+
 7.3.  URIs
 
    [1] https://en.wikipedia.org/wiki/Virtual_file_system
@@ -764,16 +774,6 @@ Author's Address
    USA
 
    Email: nico@cryptonector.com
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -81,18 +81,19 @@
   <middle>
     <section anchor="intro" title="Introduction">
       <t>
-        [TBD: Add references galore.  How to reference Unicode?  How to
-        reference US-ASCII?  How best to reference HFS+?  How best to
-        reference ZFS?  May have to find useful references for POSIX and
-        WIN32.  Various blog entries may be of interest -- can they be
-        referenced?]
+        [TBD: Add references galore.  How best to reference HFS+?  How
+        best to reference ZFS?  May have to find useful references for
+        POSIX and WIN32.  Various blog entries may be of interest -- can
+        they be referenced?]
       </t>
 
       <t>
         We, the Internet community, have long concluded that we must
         internationalize all our protocols.  This is generally not an
         easy task, as often we are constrained by the realities of what
-        can be achieved while maintaining backwards compatibility.
+        can be achieved while maintaining backwards compatibility.  We
+        start by making use of Unicode <xref target="UNICODE"/>, then we
+        specify how to deal with various problems that arise.
       </t>
 
       <t>
@@ -100,8 +101,11 @@
         (I18N), specifically only for file names and file paths.  Here
         we address the two main issues that arise in filesystem I18N:
         <list style="symbols">
-          <t>Unicode equivalence</t>
-          <t>Case foldings for case-insensitivity</t>
+          <t>Unicode equivalence;</t>
+          <t>Additional visual equivalence mappings that may be needed
+            above and beyond those provided for by Unicode Normalization
+          Forms;</t>
+          <t>Case foldings for case-insensitivity.</t>
         </list>
       </t>
 
@@ -243,6 +247,23 @@
           </t>
         </section>
 
+        <section anchor="intro_extra" title="Other Visual Equivalence Mappings">
+          <t>
+            Besides the normalization forms, certain characters have
+            visual equivalents that are not normally considered
+            equivalent under normalization, but which may need to be
+            considered equivalent in limited contexts, such as naming
+            identifiers (e.g., file names).  For example, NON-BREAKING
+            HYPHEN (U+2011) looks indistinguishable from HYPHEN-MINUS
+            (U+002D).  Normally, users are unlikely to type a
+            NON-BREAKING HYPHEN as they type file names, but when
+            pasting copied text as file names, a non-breaking hyphen may
+            sneak in.  Besides this example, there are a variety of
+            other sets of visually-equivalent and visually-confusable
+            characters that may (or may not) need mapping.
+          </t>
+        </section>
+
         <section anchor="intro_case" title="Case Foldings for Case-Insensitivity">
           <t>
             Case-insensitivity implies folding characters of one case to
@@ -262,7 +283,7 @@
           <t>
             In some cases it may be possible to construct case-folding
             tailorings that are locale-neutral.  For example, all of the
-            following conuld be considered equivalent:
+            following could be considered equivalent:
             <list style="symbols">
               <t>LATIN CAPITAL LETTER I (U+0049)</t>
               <t>LATIN SMALL LETTER I (U+0069)</t>
@@ -270,7 +291,12 @@
               <t>LATIN SMALL LETTER DOTLESS I (U+0131)</t>
             </list>
             which might satisfy a mix of users including those familiar
-            with Turkish and those not, using the same filesystem.
+            with Turkish and those not, using the same filesystem.  Of
+            course, it is also possible that considering these four to
+            be equivalent for case-insensitivity will surprise and anger
+            users, in which case a site might need separate filesystems
+            for Turkish or Azerbaijani content and non-Turkish,
+            non-Azerbaijani content.
           </t>
         </section>
 
@@ -324,14 +350,19 @@
 
         <t>
           For example, the 4.4BSD operating system and derivatives have
-          a VFS <xref target="BSD4.4"/>, as do Solaris and derivatives
-          <xref target="SolarisInternals"/>, Windows <eref
+          a VFS <xref target="BSD4.4" format="none">[BSD4.4], section
+            6.5, page 218</xref>, as do Solaris and derivatives <xref
+            target="SolarisInternals" format="none">[SolarisInternals],
+            section 14.5, page 675</xref>, Unix systems in general <xref
+            target="UnixInternals" format="none">[UnixInternals],
+            section 8.6, page 234</xref> <xref target="LinuxKernelDev"
+            format="none">[LinuxKernelDev], chapter 13, page 261</xref>, Windows <eref
             target="https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/"/>,
-          OS X, and Linux.  A VFS of a sort, including FUSE, may well be
-          the only reasonable way to support more than one kind of
-          filesystem while retaining compatibility with
-          previously-existing filesystem APIs.  This explains why so
-          many modern operating systems have a VFS.
+          OS X, and Linux.  A VFS of a sort may well be the only
+          reasonable way to support more than one kind of filesystem
+          while retaining compatibility with previously-existing
+          filesystem APIs.  This explains why so many modern operating
+          systems have a VFS.
         </t>
 
         <t>
@@ -635,6 +666,12 @@
 
     <section anchor="guidelines_proto" title="Filesystem Protocol I18N Guidelines">
       <t>
+        Remote filesystem protocols MUST specify a UTF (typically UTF-8
+        <xref target="RFC3629"/>) and must reject invalid code unit
+        sequences for that UTF <xref target="UNICODE"/>.
+      </t>
+
+      <t>
         Remote filesystem protocols that allow clients to perform
         lookups against cached directory listings MUST allow clients to
         discover all relevant I18N behaviors of the filesystem whence
@@ -793,6 +830,20 @@
           <author fullname="Richard" initials="R." surname="McDougal"/>
           <author fullname="Jim" initials="J." surname="Mauro"/>
           <date year="2007"/>
+        </front>
+      </reference>
+      <reference anchor="UnixInternals">
+        <front>
+          <title>Unix Internals -- The New Frontier</title>
+          <author fullname="Uresh" initials="U." surname="Vahalia"/>
+          <date year="1996"/>
+        </front>
+      </reference>
+      <reference anchor="LinuxKernelDev">
+        <front>
+          <title>Linux Kernel Development, Third Edition</title>
+          <author fullname="Robert" initials="R." surname="Love"/>
+          <date year="2010"/>
         </front>
       </reference>
     </references>

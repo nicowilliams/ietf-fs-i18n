@@ -379,8 +379,9 @@
 <link href="#rfc.section.1.2" rel="Chapter" title="1.2 Glossary">
 <link href="#rfc.section.1.3" rel="Chapter" title="1.3 Filesystem Internationalization">
 <link href="#rfc.section.1.3.1" rel="Chapter" title="1.3.1 Canonical Equivalence (Normalization)">
-<link href="#rfc.section.1.3.2" rel="Chapter" title="1.3.2 Case Foldings for Case-Insensitivity">
-<link href="#rfc.section.1.3.3" rel="Chapter" title="1.3.3 Caching Clients">
+<link href="#rfc.section.1.3.2" rel="Chapter" title="1.3.2 Other Visual Equivalence Mappings">
+<link href="#rfc.section.1.3.3" rel="Chapter" title="1.3.3 Case Foldings for Case-Insensitivity">
+<link href="#rfc.section.1.3.4" rel="Chapter" title="1.3.4 Caching Clients">
 <link href="#rfc.section.1.4" rel="Chapter" title="1.4 Running Code Architecture Notes">
 <link href="#rfc.section.2" rel="Chapter" title="2 Filesystem I18N Guidelines">
 <link href="#rfc.section.2.1" rel="Chapter" title="2.1 Filesystem I18N Guidelines: Non-Unicode File names">
@@ -463,9 +464,11 @@
 </li>
 <ul><li>1.3.1.   <a href="#rfc.section.1.3.1">Canonical Equivalence (Normalization)</a>
 </li>
-<li>1.3.2.   <a href="#rfc.section.1.3.2">Case Foldings for Case-Insensitivity</a>
+<li>1.3.2.   <a href="#rfc.section.1.3.2">Other Visual Equivalence Mappings</a>
 </li>
-<li>1.3.3.   <a href="#rfc.section.1.3.3">Caching Clients</a>
+<li>1.3.3.   <a href="#rfc.section.1.3.3">Case Foldings for Case-Insensitivity</a>
+</li>
+<li>1.3.4.   <a href="#rfc.section.1.3.4">Caching Clients</a>
 </li>
 </ul><li>1.4.   <a href="#rfc.section.1.4">Running Code Architecture Notes</a>
 </li>
@@ -502,13 +505,14 @@
   <h1 id="rfc.section.1">
 <a href="#rfc.section.1">1.</a> <a href="#intro" id="intro">Introduction</a>
 </h1>
-<p id="rfc.section.1.p.1">[TBD: Add references galore.  How to reference Unicode?  How to reference US-ASCII?  How best to reference HFS+?  How best to reference ZFS?  May have to find useful references for POSIX and WIN32.  Various blog entries may be of interest -- can they be referenced?] </p>
-<p id="rfc.section.1.p.2">We, the Internet community, have long concluded that we must internationalize all our protocols.  This is generally not an easy task, as often we are constrained by the realities of what can be achieved while maintaining backwards compatibility.  </p>
+<p id="rfc.section.1.p.1">[TBD: Add references galore.  How best to reference HFS+?  How best to reference ZFS?  May have to find useful references for POSIX and WIN32.  Various blog entries may be of interest -- can they be referenced?] </p>
+<p id="rfc.section.1.p.2">We, the Internet community, have long concluded that we must internationalize all our protocols.  This is generally not an easy task, as often we are constrained by the realities of what can be achieved while maintaining backwards compatibility.  We start by making use of Unicode <a href="#UNICODE" class="xref">[UNICODE]</a>, then we specify how to deal with various problems that arise.  </p>
 <p id="rfc.section.1.p.3">In this document we focus on filesystem internationalization (I18N), specifically only for file names and file paths.  Here we address the two main issues that arise in filesystem I18N: </p>
 
 <ul>
-<li>Unicode equivalence</li>
-<li>Case foldings for case-insensitivity</li>
+<li>Unicode equivalence;</li>
+<li>Additional visual equivalence mappings that may be needed above and beyond those provided for by Unicode Normalization Forms;</li>
+<li>Case foldings for case-insensitivity.</li>
 </ul>
 
 <p> </p>
@@ -567,11 +571,15 @@
 <p id="rfc.section.1.3.1.p.4">Unicode compatibility equivalence allows equivalence between different representations of the same abstract character that may nonetheless have different visual appearance or behavior.  There are two normalization forms that support compatibility equivalence: NFKC and NFKD.  Using NoCL with NFKC or NFKD may be surprising to users in a visual way.  While form-insensitivity with NFKC or NFKD may surprise users who might consider two file names distinct even when Unicode considers them equivalent under compatibility equivalence.  The latter seems less likely and less surprising, though that is an entirely subjective judgement.  </p>
 <p id="rfc.section.1.3.1.p.5">We do not recommend either of NoCL or FIP over the other.  </p>
 <h1 id="rfc.section.1.3.2">
-<a href="#rfc.section.1.3.2">1.3.2.</a> <a href="#intro_case" id="intro_case">Case Foldings for Case-Insensitivity</a>
+<a href="#rfc.section.1.3.2">1.3.2.</a> <a href="#intro_extra" id="intro_extra">Other Visual Equivalence Mappings</a>
 </h1>
-<p id="rfc.section.1.3.2.p.1">Case-insensitivity implies folding characters of one case to another for comparison purposes, typically to lower-case.  These case foldings are defined by Unicode.  Generally, case-insensitive filesystems preserve original case just as form-insensitive filesystems preserve original form.  </p>
-<p id="rfc.section.1.3.2.p.2">It is possible that some case foldings may have to vary by locale.  A commonly used example of character where case foldings that varies by locale is LATIN SMALL LETTER DOTLESS I (U+0131).  </p>
-<p id="rfc.section.1.3.2.p.3">In some cases it may be possible to construct case-folding tailorings that are locale-neutral.  For example, all of the following conuld be considered equivalent: </p>
+<p id="rfc.section.1.3.2.p.1">Besides the normalization forms, certain characters have visual equivalents that are not normally considered equivalent under normalization, but which may need to be considered equivalent in limited contexts, such as naming identifiers (e.g., file names).  For example, NON-BREAKING HYPHEN (U+2011) looks indistinguishable from HYPHEN-MINUS (U+002D).  Normally, users are unlikely to type a NON-BREAKING HYPHEN as they type file names, but when pasting copied text as file names, a non-breaking hyphen may sneak in.  Besides this example, there are a variety of other sets of visually-equivalent and visually-confusable characters that may (or may not) need mapping.  </p>
+<h1 id="rfc.section.1.3.3">
+<a href="#rfc.section.1.3.3">1.3.3.</a> <a href="#intro_case" id="intro_case">Case Foldings for Case-Insensitivity</a>
+</h1>
+<p id="rfc.section.1.3.3.p.1">Case-insensitivity implies folding characters of one case to another for comparison purposes, typically to lower-case.  These case foldings are defined by Unicode.  Generally, case-insensitive filesystems preserve original case just as form-insensitive filesystems preserve original form.  </p>
+<p id="rfc.section.1.3.3.p.2">It is possible that some case foldings may have to vary by locale.  A commonly used example of character where case foldings that varies by locale is LATIN SMALL LETTER DOTLESS I (U+0131).  </p>
+<p id="rfc.section.1.3.3.p.3">In some cases it may be possible to construct case-folding tailorings that are locale-neutral.  For example, all of the following could be considered equivalent: </p>
 
 <ul>
 <li>LATIN CAPITAL LETTER I (U+0049)</li>
@@ -580,10 +588,10 @@
 <li>LATIN SMALL LETTER DOTLESS I (U+0131)</li>
 </ul>
 
-<p> which might satisfy a mix of users including those familiar with Turkish and those not, using the same filesystem.  </p>
-<h1 id="rfc.section.1.3.3">
-<a href="#rfc.section.1.3.3">1.3.3.</a> Caching Clients</h1>
-<p id="rfc.section.1.3.3.p.1">Remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit local operations to be performed using cached directory listings that work the same way as on the server.  We do not specify any case foldings in this document.  Instead we will either create a registry of case folding tailorings, or use the Common Locale Data Repository (CLDR), then require that filesystems and servers be able to identify what case foldings are in effect for case-insensitive filesystems.  </p>
+<p> which might satisfy a mix of users including those familiar with Turkish and those not, using the same filesystem.  Of course, it is also possible that considering these four to be equivalent for case-insensitivity will surprise and anger users, in which case a site might need separate filesystems for Turkish or Azerbaijani content and non-Turkish, non-Azerbaijani content.  </p>
+<h1 id="rfc.section.1.3.4">
+<a href="#rfc.section.1.3.4">1.3.4.</a> Caching Clients</h1>
+<p id="rfc.section.1.3.4.p.1">Remote filesystem protocols often involve caching on clients, which caching may require knowledge of filesystem I18N settings in order to permit local operations to be performed using cached directory listings that work the same way as on the server.  We do not specify any case foldings in this document.  Instead we will either create a registry of case folding tailorings, or use the Common Locale Data Repository (CLDR), then require that filesystems and servers be able to identify what case foldings are in effect for case-insensitive filesystems.  </p>
 <h1 id="rfc.section.1.4">
 <a href="#rfc.section.1.4">1.4.</a> <a href="#arch_notes" id="arch_notes">Running Code Architecture Notes</a>
 </h1>
@@ -596,7 +604,7 @@
 </ul>
 
 <p> </p>
-<p id="rfc.section.1.4.p.3">For example, the 4.4BSD operating system and derivatives have a VFS <a href="#BSD4.4" class="xref">[BSD4.4]</a>, as do Solaris and derivatives <a href="#SolarisInternals" class="xref">[SolarisInternals]</a>, Windows <span>&lt;</span><a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/">https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/</a><span>&gt;</span>, OS X, and Linux.  A VFS of a sort, including FUSE, may well be the only reasonable way to support more than one kind of filesystem while retaining compatibility with previously-existing filesystem APIs.  This explains why so many modern operating systems have a VFS.  </p>
+<p id="rfc.section.1.4.p.3">For example, the 4.4BSD operating system and derivatives have a VFS <a href="#BSD4.4" class="xref">[BSD4.4], section 6.5, page 218</a>, as do Solaris and derivatives <a href="#SolarisInternals" class="xref">[SolarisInternals], section 14.5, page 675</a>, Unix systems in general <a href="#UnixInternals" class="xref">[UnixInternals], section 8.6, page 234</a> <a href="#LinuxKernelDev" class="xref">[LinuxKernelDev], chapter 13, page 261</a>, Windows <span>&lt;</span><a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/">https://docs.microsoft.com/en-us/windows-hardware/drivers/ifs/</a><span>&gt;</span>, OS X, and Linux.  A VFS of a sort may well be the only reasonable way to support more than one kind of filesystem while retaining compatibility with previously-existing filesystem APIs.  This explains why so many modern operating systems have a VFS.  </p>
 <p id="rfc.section.1.4.p.4">Thus in most if not all general purpose operating systems today, the code path from the boundary between the application and the operating system, and the boundary between the VFS and the filesystem, is "just-use-8" <a href="#glossary" class="xref">Section 1.2</a> or "just-use-16" <a href="#glossary" class="xref">Section 1.2</a>, with no attempt at any form of string preparation (normalization, application of various mappings, case folding, transcoding) done anywhere in between.  </p>
 <p id="rfc.section.1.4.p.5">There are filesystem servers that access raw storage directly and implement the filesystem and the remote filesystem protocol server in one monolythic stack without a VFS in the way, but it is very common to have remote filesystem protocol servers implemented on top of the VFS or on top of the system calls.  Even monolythic servers tend to support a notion of multiple filesystems in a server or volume, and may have different I18N settings for each filesystem.  Thus it's common to leave I18N handling to code layers close to the filesystem even in monolythic server implementations.  </p>
 <p id="rfc.section.1.4.p.6">In practice all of foregoing has led to I18N functionality residing strictly in the filesystem.  Two filesystems have defined the best current practices in this regard: </p>
@@ -645,14 +653,14 @@
 <div id="fsarchart"></div>
 <pre>
             
-                               +----------+
-                               | NFS clnt |
-                               +----------+
+                             +------------+
+                             | NFSv4 clnt |
+                             +------------+
                                      ^
    +-----------------------+         |
    | POSIX app process     |         |
    |   (user-land)         |         |
-   |  -------------------- |         |
+   |-----------------------|         |
    |  libc stubs           |         |
    |        ^              |         |
    |        |              |         |
@@ -661,9 +669,9 @@
    |        ^  (kernel-land)         |     |
    |        |                        |     |
    |        v                        v     |
-   | +--------------------+  +----------+  |
-   | |POSIX system calls  |  |NFS server|  |
-   | +--------------------+  +-------^--+  |
+   | +--------------------+ +------------+ |
+   | |POSIX system calls  | |NFSv4 server| |
+   | +--------------------+ +--------^---+ |
    |        ^                        |     |
    |        |                        |     |
    |        v                        v     |
@@ -718,7 +726,8 @@
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#guidelines_proto" id="guidelines_proto">Filesystem Protocol I18N Guidelines</a>
 </h1>
-<p id="rfc.section.3.p.1">Remote filesystem protocols that allow clients to perform lookups against cached directory listings MUST allow clients to discover all relevant I18N behaviors of the filesystem whence any given directory listing: </p>
+<p id="rfc.section.3.p.1">Remote filesystem protocols MUST specify a UTF (typically UTF-8 <a href="#RFC3629" class="xref">[RFC3629]</a>) and must reject invalid code unit sequences for that UTF <a href="#UNICODE" class="xref">[UNICODE]</a>.  </p>
+<p id="rfc.section.3.p.2">Remote filesystem protocols that allow clients to perform lookups against cached directory listings MUST allow clients to discover all relevant I18N behaviors of the filesystem whence any given directory listing: </p>
 
 <ul>
 <li>whether the filesystem normalizes on CREATE (and LOOKUP), and if so, to what NF in what Unicode version;</li>
@@ -727,8 +736,8 @@
 </ul>
 
 <p> Foldings are identified via a folding set name as registered in a to-be-determined (IANA?) registry.  </p>
-<p id="rfc.section.3.p.2">Because some filesystems might allow for different I18N settings on a per-directory basis, remote filesystem protocols MUST allow those settings to be discoverable on a per-directory basis.  </p>
-<p id="rfc.section.3.p.3">Internet filesystem servers MUST reject attempts to create new non-Unicode file names.  (Note that this requirement is weaker ("SHOULD") for the actual filesystems, since those might have to allow non-Unicode content for legacy reasons via interfaces other than Internet filesystem protocols.) </p>
+<p id="rfc.section.3.p.3">Because some filesystems might allow for different I18N settings on a per-directory basis, remote filesystem protocols MUST allow those settings to be discoverable on a per-directory basis.  </p>
+<p id="rfc.section.3.p.4">Internet filesystem servers MUST reject attempts to create new non-Unicode file names.  (Note that this requirement is weaker ("SHOULD") for the actual filesystems, since those might have to allow non-Unicode content for legacy reasons via interfaces other than Internet filesystem protocols.) </p>
 <h1 id="rfc.section.3.1">
 <a href="#rfc.section.3.1">3.1.</a> <a href="#guidelines_caching" id="guidelines_caching">I18N and Caching in Filesystem Protocol Clients</a>
 </h1>
@@ -793,6 +802,11 @@
 <a>Galbraith, J.</a> and <a>O. Saarenmaa</a>, "<a href="https://tools.ietf.org/html/draft-ietf-secsh-filexfer-13">SSH File Transfer Protocol</a>", Internet-Draft draft-ietf-secsh-filexfer-13, July 2006.</td>
 </tr>
 <tr>
+<td class="reference"><b id="LinuxKernelDev">[LinuxKernelDev]</b></td>
+<td class="top">
+<a>Love, R.</a>, "<a>Linux Kernel Development, Third Edition</a>", 2010.</td>
+</tr>
+<tr>
 <td class="reference"><b id="McKusick86">[McKusick86]</b></td>
 <td class="top">
 <a>McKusik, M.</a> and <a>M. Karels</a>, "<a>Towards a Compatible File System Interface</a>", Jun 1986.</td>
@@ -821,6 +835,11 @@
 <td class="reference"><b id="SolarisInternals">[SolarisInternals]</b></td>
 <td class="top">
 <a>McDougal, R.</a> and <a>J. Mauro</a>, "<a>Solaris Internals -- Solaris 10 and OpenSolaris Kernel Architecture</a>", 2007.</td>
+</tr>
+<tr>
+<td class="reference"><b id="UnixInternals">[UnixInternals]</b></td>
+<td class="top">
+<a>Vahalia, U.</a>, "<a>Unix Internals -- The New Frontier</a>", 1996.</td>
 </tr>
 </tbody></table>
 <h1 id="rfc.authors"><a href="#rfc.authors">Author's Address</a></h1>
